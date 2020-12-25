@@ -26,11 +26,11 @@ module.exports = {
 
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dest'),
+    path: path.resolve(__dirname, 'docs'),
   },
 
   devServer: {
-    contentBase: path.join(__dirname, 'dest'),
+    contentBase: path.join(__dirname, 'docs'),
     writeToDisk: true
     // compress: true,
     // publicPath: "/dist/",
