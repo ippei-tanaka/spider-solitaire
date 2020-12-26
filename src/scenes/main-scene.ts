@@ -11,7 +11,7 @@ import {createCardsWithEvents as createCards} from '../models-with-events/create
 import {randomizeArray} from '../models/create-cards';
 import {emitter as modelEventEmitter} from '../models-with-events/emitter';
 import {PromiseQueue} from '../promise-queue';
-import {debounce} from 'underscore';
+// import {debounce} from 'underscore';
 
 export default class MainScene extends Phaser.Scene
 {
@@ -74,11 +74,18 @@ export default class MainScene extends Phaser.Scene
       y: 600,
       label: 'UNDO'
     });
-    undoButton.on('pointerdown', debounce(() => {
-      if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
+    undoButton.on('pointerdown', () => {
       this._table.undo();
-    }, 300, true));
+    });
     this.children.add(undoButton);
+    this._cardAnimationBetweenPilesQueue.onStart(() => {
+      undoButton.setActive(false);
+      undoButton.setAlpha(0.5);
+    });
+    this._cardAnimationBetweenPilesQueue.onComplete(() => {
+      undoButton.setActive(true);
+      undoButton.setAlpha(1);
+    });
 
     const hintButton = new Button({
       scene: this,
@@ -86,11 +93,18 @@ export default class MainScene extends Phaser.Scene
       y: 600,
       label: 'HINT'
     });
-    hintButton.on('pointerdown', debounce(() => {
-      if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
+    hintButton.on('pointerdown', () => {
       console.log(this._table.getPossibleMovesBetweenTableauPiles());
-    }, 300, true));
+    });
     this.children.add(hintButton);
+    this._cardAnimationBetweenPilesQueue.onStart(() => {
+      hintButton.setActive(false);
+      hintButton.setAlpha(0.5);
+    });
+    this._cardAnimationBetweenPilesQueue.onComplete(() => {
+      hintButton.setActive(true);
+      hintButton.setAlpha(1);
+    });
 
     gameObjectEventEmitter.on("CARD_POINTEROVER", this.onCardPointerOver.bind(this));
     gameObjectEventEmitter.on("CARD_POINTEROUT", this.onCardPointerOut.bind(this));
@@ -103,6 +117,8 @@ export default class MainScene extends Phaser.Scene
     modelEventEmitter.on("FLIP_OVER_CARD", this.onFlipOverCard.bind(this));
 
     this._table.startGame();
+
+
 
     // this.input.addListener('pointerout', () => {
     //   console.log(66666);
