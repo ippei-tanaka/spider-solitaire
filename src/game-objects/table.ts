@@ -127,6 +127,16 @@ export class TableGameObject extends Phaser.GameObjects.Container
     return pile;
   }
 
+  getPileGameObjectByName (name:string)
+  {
+    return this.getPileGameObjectBy(p => p.name === name);
+  }
+
+  getPileGameObjectByCardGameObjectName (name:string)
+  {
+    return this.getPileGameObjectBy(p => p.cardGameObjects.find(c => c.name === name));
+  }
+
   get deckPileGameObject ()
   {
     return this._deckPileGameObject;

@@ -57,6 +57,16 @@ export class Table
     return pile;
   }
 
+  getPileById (id:string)
+  {
+    return this.getPileBy(p => p.id === id);
+  }
+
+  getPileByCardId (id:string)
+  {
+    return this.getPileBy(p => p.cards.find(c => c.id === id));
+  }
+
   get deckPile ()
   {
     return this._deckPile;
