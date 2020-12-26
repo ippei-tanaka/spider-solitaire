@@ -103,6 +103,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
     });
     this._pileGameObjects = [...this._pileGameObjects, _dragPileGameObject];
     this._dragPileGameObject = _dragPileGameObject;
+    this._dragPileGameObject.setActive(false);
     this.add(_dragPileGameObject);
   }
 

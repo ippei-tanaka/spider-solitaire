@@ -77,7 +77,7 @@ export default class MainScene extends Phaser.Scene
     undoButton.on('pointerdown', debounce(() => {
       if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
       this._table.undo();
-    }, 100, true));
+    }, 300, true));
     this.children.add(undoButton);
 
     const hintButton = new Button({
@@ -89,7 +89,7 @@ export default class MainScene extends Phaser.Scene
     hintButton.on('pointerdown', debounce(() => {
       if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
       console.log(this._table.getPossibleMovesBetweenTableauPiles());
-    }, 100, true));
+    }, 300, true));
     this.children.add(hintButton);
 
     gameObjectEventEmitter.on("CARD_POINTEROVER", this.onCardPointerOver.bind(this));
@@ -103,44 +103,23 @@ export default class MainScene extends Phaser.Scene
     modelEventEmitter.on("FLIP_OVER_CARD", this.onFlipOverCard.bind(this));
 
     this._table.startGame();
+
+    // this.input.addListener('pointerout', () => {
+    //   console.log(66666);
+    // })
   }
 
-  onCardPointerOver ({cardGameObject}:{cardGameObject:CardGameObject})
+  onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})
   {
-    if (!this._cardAnimationBetweenPilesQueue.isProcessing)
+    if (!this._cardAnimationBetweenPilesQueue.isProcessing) {
       this.addHighlightToCardGameObject({cardGameObject});
-    else
+    } else {
       this._cardAnimationBetweenPilesQueue.add(async () => {
-        this.addHighlightToCardGameObject({cardGameObject});
+        if(this.input.hitTestPointer(pointer)[0] === cardGameObject) {
+          this.addHighlightToCardGameObject({cardGameObject});
+        }
       });
-
-    // const targetPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
-    //
-    // if (cardGameObject.isFaceUp
-    //   && this._table.tableauPiles.includes(targetPile))
-    // {
-    //   const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === targetPile.id);
-    //   const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
-    //
-    //   if (Pile.checkIfCardsAreDescending({cards: targetPile.cards.slice(-size), faceUp: true, inSuit: true}))
-    //   {
-    //     if (!this._cardAnimationBetweenPilesQueue.isProcessing)
-    //       cardGameObject.addHighlight();
-    //     else
-    //       this._cardAnimationBetweenPilesQueue.add(async () => {
-    //         cardGameObject.addHighlight();
-    //       });
-    //   }
-    // }
-    // else if (this._table.frontDrawPile === targetPile)
-    // {
-    //   if (!this._cardAnimationBetweenPilesQueue.isProcessing)
-    //     cardGameObject.addHighlight();
-    //   else
-    //     this._cardAnimationBetweenPilesQueue.add(async () => {
-    //       cardGameObject.addHighlight();
-    //     });
-    // }
+    }
   }
 
   addHighlightToCardGameObject ({cardGameObject}:{cardGameObject:CardGameObject})
@@ -166,13 +145,7 @@ export default class MainScene extends Phaser.Scene
 
   onCardPointerOut ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    if (!this._cardAnimationBetweenPilesQueue.isProcessing)
-      cardGameObject.removeHighlight();
-    else
-      this._cardAnimationBetweenPilesQueue.add(async () => {
-        cardGameObject.removeHighlight();
-      });
-    // if (cardGameObject.isHighLighted) cardGameObject.removeHighlight();
+    cardGameObject.removeHighlight();
   }
 
   onCardPointerDown ({cardGameObject}:{cardGameObject:CardGameObject})
@@ -183,7 +156,6 @@ export default class MainScene extends Phaser.Scene
 
     if (this._table.frontDrawPile === targetPile)
     {
-      cardGameObject.removeHighlight();
       this._table.dealCardsFromDrawPile();
     }
   }
@@ -193,8 +165,11 @@ export default class MainScene extends Phaser.Scene
     if (!cardGameObject.isHighLighted) return;
 
     const targetPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
+    const dragPileGameObject = this._tableGameObject.dragPileGameObject;
 
-    if (cardGameObject.isFaceUp && this._table.tableauPiles.includes(targetPile))
+    if (cardGameObject.isFaceUp
+      && this._table.tableauPiles.includes(targetPile)
+      && !dragPileGameObject.active)
     {
       const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === targetPile.id);
       const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
@@ -236,12 +211,7 @@ export default class MainScene extends Phaser.Scene
 
   onCardDrop ({zone, cardGameObject}:{zone:Phaser.GameObjects.Zone, cardGameObject:CardGameObject})
   {
-    // console.log('onCardDrop');
-
-    // if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
-
     const targetPileGameObject = this._tableGameObject.getPileGameObjectBy(pile => pile.cardGameObjects.find(card => card === cardGameObject));
-
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
     if (targetPileGameObject === dragPileGameObject && dragPileGameObject.active)
     {
@@ -259,7 +229,8 @@ export default class MainScene extends Phaser.Scene
         return card;
       });
 
-      if (!toPile.frontCard || Pile.checkIfCardsAreDescending({cards: [toPile.frontCard, ..._cards], faceUp: true}))
+      if (!toPile.frontCard
+        || Pile.checkIfCardsAreDescending({cards: [toPile.frontCard, ..._cards], faceUp: true}))
       {
         this._table.moveCardBetweenTableauPiles({
           to: toPile,
@@ -268,21 +239,19 @@ export default class MainScene extends Phaser.Scene
         });
         dragPileGameObject.setActive(false);
       } else {
-        fromPileGameObject.adjustCardGameObjectPositions();
+        this._cardAnimationBetweenPilesQueue.add(async () => {
+          await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
+          dragPileGameObject.setActive(false);
+        });
       }
     }
   }
 
-  onCardDragEnd ({cardGameObject}:{cardGameObject:CardGameObject})
+  onCardDragEnd ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})
   {
-    // console.log('onCardDragEnd');
-
-    // if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
-
     const targetPileGameObject = this._tableGameObject.getPileGameObjectBy(p => {
       return p.cardGameObjects.find(c => c === cardGameObject);
     });
-
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
     if (targetPileGameObject === dragPileGameObject && dragPileGameObject.active)
     {
@@ -291,19 +260,19 @@ export default class MainScene extends Phaser.Scene
       const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === fromPile.id);
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
-      fromPileGameObject.adjustCardGameObjectPositions();
-      dragPileGameObject.setActive(false);
+      this._cardAnimationBetweenPilesQueue.add(async () => {
+        await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
+        dragPileGameObject.setActive(false);
+      });
     }
   }
 
   onMoveCardsBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number}) {
-    // console.log('onMoveCardsBetweenPiles');
     const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === from.id);
     const toPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === to.id);
 
     this._cardAnimationBetweenPilesQueue.add(async () => {
       const cardGameObjects = fromPileGameObject.drawFrontCardGameObjects({size});
-      cardGameObjects.forEach(c => c.removeHighlight());
       toPileGameObject.placeCardGameObjects({cardGameObjects});
       this._tableGameObject.bringToTop(toPileGameObject);
       await Promise.all([
