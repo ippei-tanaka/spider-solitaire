@@ -41,11 +41,11 @@ export default class MainScene extends Phaser.Scene
   async create ()
   {
     this.__table = new Table({
-      numberOfTableauPiles: 6,
-      numberOfDrawPiles: 3,
+      numberOfTableauPiles: 10,
+      numberOfDrawPiles: 5,
       cards: createCards({
-        numberOfDecksUsed: 2,
-        numberOfSuits: 1
+        numberOfDecksUsed: 4,
+        numberOfSuits: 2
       })
     });
 
@@ -75,7 +75,7 @@ export default class MainScene extends Phaser.Scene
       label: 'UNDO'
     });
     undoButton.on('pointerdown', () => {
-      this._table.undo();
+      if (undoButton.active) this._table.undo();
     });
     this.children.add(undoButton);
     this._cardAnimationBetweenPilesQueue.onStart(() => {
@@ -87,6 +87,11 @@ export default class MainScene extends Phaser.Scene
       undoButton.setAlpha(1);
     });
 
+    const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
+    uKey.on('down', (event:KeyboardEvent) => {
+      if (undoButton.active) this._table.undo();
+    });
+
     const hintButton = new Button({
       scene: this,
       x: 250,
@@ -94,7 +99,8 @@ export default class MainScene extends Phaser.Scene
       label: 'HINT'
     });
     hintButton.on('pointerdown', () => {
-      console.log(this._table.getPossibleMovesBetweenTableauPiles());
+      if (hintButton.active)
+        console.log(this._table.getPossibleMovesBetweenTableauPiles());
     });
     this.children.add(hintButton);
     this._cardAnimationBetweenPilesQueue.onStart(() => {
@@ -118,11 +124,6 @@ export default class MainScene extends Phaser.Scene
 
     this._table.startGame();
 
-
-
-    // this.input.addListener('pointerout', () => {
-    //   console.log(66666);
-    // })
   }
 
   onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})

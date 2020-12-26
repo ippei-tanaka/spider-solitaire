@@ -67,7 +67,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const tableauPile = new PileGameObject({
         scene: this.scene,
-        x:100 + index * 90,
+        x:70 + index * 90,
         y:250,
         name: tableauPilesIds[index],
         isSpread: true,
