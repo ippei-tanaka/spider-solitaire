@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import {TableGameObjectWithEvent as TableGameObject} from '../game-objects-with-events/table';
-import {PileGameObjectWithEvent as PileGameObject} from '../game-objects-with-events/pile';
+// import {PileGameObjectWithEvent as PileGameObject} from '../game-objects-with-events/pile';
 import {CardGameObjectWithEvent as CardGameObject} from '../game-objects-with-events/card';
 import {emitter as gameObjectEventEmitter} from '../game-objects-with-events/emitter';
 import {Button} from '../game-objects/button';
@@ -10,8 +10,8 @@ import {TableWithEvent as Table} from '../models-with-events/table';
 import {createCardsWithEvents as createCards} from '../models-with-events/create-cards';
 import {randomizeArray} from '../models/create-cards';
 import {emitter as modelEventEmitter} from '../models-with-events/emitter';
-// import {TweenQueue} from '../game-objects/tween-queue';
 import {PromiseQueue} from '../promise-queue';
+import {debounce} from 'underscore';
 
 export default class MainScene extends Phaser.Scene
 {
@@ -19,7 +19,6 @@ export default class MainScene extends Phaser.Scene
   private __tableGameObject:TableGameObject | undefined;
   private _cardAnimationBetweenPilesQueue:PromiseQueue<void> = new PromiseQueue<void>();
   private _dragPileAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
-  // private _isAnimating:boolean = false;
 
   constructor () {
     super('main');
@@ -75,10 +74,10 @@ export default class MainScene extends Phaser.Scene
       y: 600,
       label: 'UNDO'
     });
-    undoButton.on('pointerdown', () => {
+    undoButton.on('pointerdown', debounce(() => {
       if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
       this._table.undo();
-    });
+    }, 100, true));
     this.children.add(undoButton);
 
     const hintButton = new Button({
@@ -87,10 +86,10 @@ export default class MainScene extends Phaser.Scene
       y: 600,
       label: 'HINT'
     });
-    hintButton.on('pointerdown', () => {
+    hintButton.on('pointerdown', debounce(() => {
       if (this._cardAnimationBetweenPilesQueue.isProcessing) return;
       console.log(this._table.getPossibleMovesBetweenTableauPiles());
-    });
+    }, 100, true));
     this.children.add(hintButton);
 
     gameObjectEventEmitter.on("CARD_POINTEROVER", this.onCardPointerOver.bind(this));
