@@ -1,4 +1,4 @@
-export type PromiseQueueEvents<T> = {
+export type JobQueueEvents<T> = {
   QUEUE_START: {
   },
   QUEUE_END: {
@@ -6,9 +6,9 @@ export type PromiseQueueEvents<T> = {
   QUEUE_CANCEL: {
     wasProcessing: boolean
   },
-  PROMISE_START: {
+  JOB_START: {
   },
-  PROMISE_END: {
+  JOB_END: {
     value: T
   },
 }

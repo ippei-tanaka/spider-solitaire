@@ -80,11 +80,11 @@ export default class MainScene extends Phaser.Scene
       if (undoButton.active) this._table.undo();
     });
     this.children.add(undoButton);
-    this._cardAnimationQueue.onStart(() => {
+    this._cardAnimationQueue.onQueueStart(() => {
       undoButton.setActive(false);
       undoButton.setAlpha(0.5);
     });
-    this._cardAnimationQueue.onComplete(() => {
+    this._cardAnimationQueue.onQueueEnd(() => {
       undoButton.setActive(true);
       undoButton.setAlpha(1);
     });
@@ -106,11 +106,11 @@ export default class MainScene extends Phaser.Scene
       }
     });
     this.children.add(hintButton);
-    this._cardAnimationQueue.onStart(() => {
+    this._cardAnimationQueue.onQueueStart(() => {
       hintButton.setActive(false);
       hintButton.setAlpha(0.5);
     });
-    this._cardAnimationQueue.onComplete(() => {
+    this._cardAnimationQueue.onQueueEnd(() => {
       hintButton.setActive(true);
       hintButton.setAlpha(1);
     });
@@ -127,8 +127,11 @@ export default class MainScene extends Phaser.Scene
 
     this._table.startGame();
 
-    this.input.on('pointerdown', () => {
-      console.log(1231);
+    this.input.on('pointerdown', (pointer:Phaser.Input.Pointer) => {
+      if(!this.input.hitTestPointer(pointer).includes(hintButton))
+      {
+        this._hintAnimationQueue.cancel();
+      }
     });
   }
 
@@ -354,6 +357,7 @@ export default class MainScene extends Phaser.Scene
             name: '',
             scene: this
           });
+          // cardGameObject.setInteractive(false);
           // if (originalCardGameObjects.length - index > size) cardGameObject.setAlpha(0);
           return cardGameObject;
         })});
@@ -363,7 +367,7 @@ export default class MainScene extends Phaser.Scene
         this._tableGameObject.bringToTop(hintPileGameObject);
 
         await new Promise(res => {
-          this.tweens.add({
+          const tween = this.tweens.add({
             targets: hintPileGameObject,
             props: {
               x: toPileGameObject.x,
@@ -373,6 +377,7 @@ export default class MainScene extends Phaser.Scene
             completeDelay: 400,
             onComplete: res
           });
+          // tween.stop();
         });
 
         hintPileGameObject.drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
