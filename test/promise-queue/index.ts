@@ -1,6 +1,6 @@
 import {PromiseQueue} from '../../src/promise-queue';
 
-test('PromiseQueue onQueueStart, onProcessStart, onProcessEnd, onQueueComplete', done => {
+test('PromiseQueue isProcessing, onQueueStart, onProcessStart, onProcessEnd, onQueueComplete', done => {
   const queue = new PromiseQueue<number>();
 
   const onQueueStartCallback = jest.fn();
@@ -8,11 +8,15 @@ test('PromiseQueue onQueueStart, onProcessStart, onProcessEnd, onQueueComplete',
   const onPromiseEndCallback = jest.fn();
   const onQueueEndCallback = jest.fn();
 
-  queue.onQueueStart(onQueueStartCallback);
+  queue.onQueueStart(() => {
+    expect(queue.isProcessing).toBe(true);
+    onQueueStartCallback();
+  });
   queue.onPromiseStart(onPromiseStartCallback);
   queue.onPromiseEnd(({value}) => onPromiseEndCallback(value));
   queue.onQueueEnd(onQueueEndCallback);
   queue.onQueueEnd(() => {
+    expect(queue.isProcessing).toBe(false);
     expect(onQueueStartCallback).toHaveBeenCalledTimes(1);
     expect(onPromiseStartCallback).toHaveBeenCalledTimes(3);
     expect(onPromiseEndCallback).toHaveBeenCalledTimes(3);
@@ -23,9 +27,15 @@ test('PromiseQueue onQueueStart, onProcessStart, onProcessEnd, onQueueComplete',
     done()
   });
 
+  expect(queue.isProcessing).toBe(false);
+
   queue.add(() => new Promise(resolve => setTimeout(() => resolve(123), 1)));
+
+  expect(queue.isProcessing).toBe(true);
+
   queue.add(() => new Promise(resolve => setTimeout(() => resolve(456), 1)));
   queue.add(() => new Promise(resolve => setTimeout(() => resolve(789), 1)));
+
 });
 
 test('PromiseQueue reuse', done => {
@@ -61,7 +71,7 @@ test('PromiseQueue reuse', done => {
   queue.add(() => new Promise(resolve => setTimeout(() => resolve(123), 1)));
   queue.add(() => new Promise(resolve => setTimeout(() => resolve(456), 1)));
 });
-/*
+
 test('PromiseQueue cancel', done => {
   const queue = new PromiseQueue<number>();
 
@@ -89,4 +99,3 @@ test('PromiseQueue cancel', done => {
   queue.add(() => new Promise(resolve => setTimeout(() => resolve(789), 1)));
   setTimeout(() => queue.cancel(), 50);
 });
-*/

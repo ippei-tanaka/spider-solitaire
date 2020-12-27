@@ -59,25 +59,18 @@ class Deferred<T>  {
   {
     return this._status === 2;
   }
-
-  get promise ()
-  {
-    return this._promise;
-  }
 }
 
 
 export class PromiseQueue<T>
 {
-  // private _latestDeferred:Deferred<T> | undefined;
   private _hasStarted:boolean = false;
   private _currentIndex:number = 0;
   private _deferedQueue:Deferred<T>[] = [];
   private _emitter: Emitter<PromiseQueueEvents<T>> = new Emitter<PromiseQueueEvents<T>>();
 
   get isProcessing () {
-    return false;
-    // return (this._latestDeferred && !this._latestDeferred.isDone) as boolean;
+    return this._hasStarted;
   }
 
   add (createPromise: () => Promise<T>)
@@ -102,8 +95,8 @@ export class PromiseQueue<T>
   {
     if (!this._hasStarted)
     {
-      this._emitter.emit("QUEUE_START", {});
       this._hasStarted = true;
+      this._emitter.emit("QUEUE_START", {});
     }
 
     if (this._currentIndex < this._deferedQueue.length)
@@ -133,9 +126,10 @@ export class PromiseQueue<T>
     if (!hasStarted || !deferred || !deferred.isProcessing) {
       this._emitter.emit("QUEUE_CANCEL", {wasProcessing: false});
     } else {
-      deferred.promise?.finally(() => {
+      deferred.onEndCallback = (value) => {
+        this._emitter.emit("PROMISE_END", {value});
         this._emitter.emit("QUEUE_CANCEL", {wasProcessing: true});
-      });
+      };
     }
   }
 
