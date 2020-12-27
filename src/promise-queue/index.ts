@@ -5,8 +5,9 @@ class Deferred<T>  {
 
   private _createPromise: () => Promise<T>;
   private _promise: Promise<T> | undefined;
-  private _callback: (value:T) => void = () => {};
-  private _isDone: boolean = false;
+  private _onStartCallback: () => void = () => {};
+  private _onEndCallback: (value:T) => void = () => {};
+  private _status: number = 0;
 
   constructor ({
     createPromise
@@ -22,70 +23,119 @@ class Deferred<T>  {
     if (!this._promise)
     {
       this._promise = this._createPromise();
+      this._status = 1;
+      this._onStartCallback();
       this._promise.then((value:T) => {
-        this._isDone = true;
-        this._callback(value);
+        this._status = 2;
+        this._onEndCallback(value);
       }).catch(() => {
+        this._status = 2;
         console.error("Promise rejected!");
-      })
+      });
     }
   }
 
-  set doneCallback (callback: (value:T) => void)
+  set onStartCallback (callback: () => void)
   {
-    this._callback = callback;
+    this._onStartCallback = callback;
+  }
+
+  set onEndCallback (callback: (value:T) => void)
+  {
+    this._onEndCallback = callback;
+  }
+
+  get isIntact ()
+  {
+    return this._status === 0;
+  }
+
+  get isProcessing ()
+  {
+    return this._status === 1;
   }
 
   get isDone ()
   {
-    return this._isDone;
+    return this._status === 2;
+  }
+
+  get promise ()
+  {
+    return this._promise;
   }
 }
 
 
 export class PromiseQueue<T>
 {
-  private _latestDeferred:Deferred<T> | undefined;
+  // private _latestDeferred:Deferred<T> | undefined;
+  private _hasStarted:boolean = false;
+  private _currentIndex:number = 0;
+  private _deferedQueue:Deferred<T>[] = [];
   private _emitter: Emitter<PromiseQueueEvents<T>> = new Emitter<PromiseQueueEvents<T>>();
 
   get isProcessing () {
-    return (this._latestDeferred && !this._latestDeferred.isDone) as boolean;
+    return false;
+    // return (this._latestDeferred && !this._latestDeferred.isDone) as boolean;
   }
 
   add (createPromise: () => Promise<T>)
   {
-    if (!this._latestDeferred || this._latestDeferred.isDone)
-    {
-      this._latestDeferred = new Deferred({createPromise});
-      this._emitter.emit("QUEUE_START", {});
+    const deferred = new Deferred({createPromise});
+    deferred.onStartCallback = () => {
       this._emitter.emit("PROMISE_START", {});
-      this._latestDeferred.doneCallback = (value) => {
-        this._emitter.emit("PROMISE_END", {value});
-        this._emitter.emit("QUEUE_END", {});
-      };
-      this._latestDeferred.process();
-    }
-    else
+    };
+    deferred.onEndCallback = (value) => {
+      this._emitter.emit("PROMISE_END", {value});
+      this._currentIndex = this._currentIndex + 1;
+      this._process();
+    };
+    this._deferedQueue = [
+      ...this._deferedQueue,
+      deferred
+    ];
+    this._process();
+  }
+
+  private _process ()
+  {
+    if (!this._hasStarted)
     {
-      const deferred = new Deferred({createPromise});
-      this._latestDeferred.doneCallback = (value) => {
-        this._emitter.emit("PROMISE_END", {value});
-        this._emitter.emit("PROMISE_START", {});
+      this._emitter.emit("QUEUE_START", {});
+      this._hasStarted = true;
+    }
+
+    if (this._currentIndex < this._deferedQueue.length)
+    {
+      const deferred = this._deferedQueue[this._currentIndex];
+      if (deferred && deferred.isIntact)
+      {
         deferred.process();
-      };
-      deferred.doneCallback = (value) => {
-        this._emitter.emit("PROMISE_END", {value});
-        this._emitter.emit("QUEUE_END", {});
-      };
-      this._latestDeferred = deferred;
+      }
+    } else {
+      this._hasStarted = false;
+      this._deferedQueue = [];
+      this._currentIndex = 0;
+      this._emitter.emit("QUEUE_END", {});
     }
   }
 
   cancel ()
   {
-    if (this._latestDeferred && !this._latestDeferred.isDone)
-    {
+    const hasStarted = this._hasStarted;
+    const deferred = this._deferedQueue[this._currentIndex];
 
+    this._hasStarted = false;
+    this._deferedQueue = [];
+    this._currentIndex = 0;
+
+    if (!hasStarted || !deferred || !deferred.isProcessing) {
+      this._emitter.emit("QUEUE_CANCEL", {wasProcessing: false});
+    } else {
+      deferred.promise?.finally(() => {
+        this._emitter.emit("QUEUE_CANCEL", {wasProcessing: true});
+      });
     }
   }
 
@@ -97,6 +147,11 @@ export class PromiseQueue<T>
   onQueueEnd (callback: () => void)
   {
     this._emitter.on('QUEUE_END', callback);
+  }
+
+  onQueueCancel (callback: () => void)
+  {
+    this._emitter.on('QUEUE_CANCEL', callback);
   }
 
   onPromiseStart (callback: () => void)
