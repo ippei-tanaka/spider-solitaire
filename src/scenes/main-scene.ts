@@ -181,6 +181,7 @@ export default class MainScene extends Phaser.Scene
     if (!cardGameObject.isHighLighted) return;
 
     // const targetPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
+    
     const targetPile = this._table.getPileByCardId(cardGameObject.name);
 
     if (this._table.frontDrawPile === targetPile)
@@ -228,7 +229,6 @@ export default class MainScene extends Phaser.Scene
   {
     if (!cardGameObject.isHighLighted) return;
 
-    // const targetPileGameObject = this._tableGameObject.getPileGameObjectBy(pile => pile.cardGameObjects.find(card => card === cardGameObject));
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
 
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
@@ -243,7 +243,6 @@ export default class MainScene extends Phaser.Scene
 
   onCardDrop ({zone, cardGameObject}:{zone:Phaser.GameObjects.Zone, cardGameObject:CardGameObject})
   {
-    // const targetPileGameObject = this._tableGameObject.getPileGameObjectBy(pile => pile.cardGameObjects.find(card => card === cardGameObject));
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
     if (targetPileGameObject === dragPileGameObject && dragPileGameObject.active)
@@ -287,9 +286,7 @@ export default class MainScene extends Phaser.Scene
     if (targetPileGameObject === dragPileGameObject && dragPileGameObject.active)
     {
       const size = dragPileGameObject.cardGameObjects.length;
-      // const fromPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
       const fromPile = this._table.getPileByCardId(cardGameObject.name);
-      // const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === fromPile.id);
       const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.id);
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
@@ -301,9 +298,7 @@ export default class MainScene extends Phaser.Scene
   }
 
   onMoveCardsBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number}) {
-    // const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === from.id);
     const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
-    // const toPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === to.id);
     const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
 
     this._cardAnimationQueue.add(async () => {
@@ -334,16 +329,19 @@ export default class MainScene extends Phaser.Scene
   {
     const moves = this._table.getPossibleMovesBetweenTableauPiles();
     const hintPileGameObject = this._tableGameObject.hintPileGameObject;
+    const clearHintPileGameObject = () => {
+      hintPileGameObject.drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
+      hintPileGameObject.x = -100000;
+      hintPileGameObject.y = -100000;
+    };
+
     for (let {from, to, size} of moves)
     {
-      this._hintAnimationQueue.add(async () =>
+      this._hintAnimationQueue.add(async (onQueueCancel) =>
       {
         const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
         const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
-        // const positions = fromPileGameObject.getAdjustedCardGameObjectPositions();
         const originalFrontCardGameObjects = fromPileGameObject.getFrontGameObjects({size});
-        // const originalCardGameObjects = fromPileGameObject.cardGameObjects;
-        // console.log(positions);
 
         hintPileGameObject.x = fromPileGameObject.x;
         hintPileGameObject.y = fromPileGameObject.y + originalFrontCardGameObjects[originalFrontCardGameObjects.length - 1].y;
@@ -357,8 +355,6 @@ export default class MainScene extends Phaser.Scene
             name: '',
             scene: this
           });
-          // cardGameObject.setInteractive(false);
-          // if (originalCardGameObjects.length - index > size) cardGameObject.setAlpha(0);
           return cardGameObject;
         })});
 
@@ -366,7 +362,7 @@ export default class MainScene extends Phaser.Scene
         hintPileGameObject.setAlpha(0.8);
         this._tableGameObject.bringToTop(hintPileGameObject);
 
-        await new Promise(res => {
+        await new Promise(resolve => {
           const tween = this.tweens.add({
             targets: hintPileGameObject,
             props: {
@@ -375,12 +371,17 @@ export default class MainScene extends Phaser.Scene
             },
             duration: 800,
             completeDelay: 400,
-            onComplete: res
+            onComplete: () => {
+              resolve();
+              clearHintPileGameObject();
+            }
           });
-          // tween.stop();
+          onQueueCancel(() => {
+            tween.stop();
+            clearHintPileGameObject();
+          });
         });
 
-        hintPileGameObject.drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
       });
     }
   }
