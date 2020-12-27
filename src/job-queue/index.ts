@@ -1,36 +1,32 @@
 import {Emitter} from '../event-emitter';
 import {JobQueueEvents} from './events';
 
-type JobCreator<T> = (
-  resolve: (value:T) => void,
-  reject: () => void,
-  onQueueCancel: (callback:() => void) => void,
-) => void;
+type JobPromiseCreator<T> = (
+  onQueueCancel: (callback:() => void) => void
+) => Promise<T>;
 
 class Job<T>  {
 
-  private _jobCreator: JobCreator<T>;
+  private _jobPromiseCreator: JobPromiseCreator<T>;
   private _onStartCallback: () => void = () => {};
   private _onEndCallback: (value:T) => void = () => {};
   private _onFailCallback: (reason:any) => void = () => {};
   private _onQueueCancelCallback: () => void = () => {};
   private _status: number = 0;
 
-  constructor (jobCreator: JobCreator<T>)
+  constructor (jobPromiseCreator: JobPromiseCreator<T>)
   {
-    this._jobCreator = jobCreator;
+    this._jobPromiseCreator = jobPromiseCreator;
   }
 
   start ()
   {
     if (this.isUntouched)
     {
-      const promise = new Promise<T>((resolve, reject) =>
-        this._jobCreator(
-          resolve,
-          reject,
+      const promise =
+        this._jobPromiseCreator(
           callback => this._onQueueCancelCallback = callback
-        ));
+        );
       this._status = 1;
       this._onStartCallback();
       promise.then((value:T) => {
@@ -90,7 +86,7 @@ export class JobQueue<T>
     return this._hasStarted;
   }
 
-  add (jobCreator: JobCreator<T>)
+  add (jobCreator: JobPromiseCreator<T>)
   {
     const job = new Job(jobCreator);
     job.onStartCallback = () => {

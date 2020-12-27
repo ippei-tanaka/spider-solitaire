@@ -10,15 +10,15 @@ import {TableWithEvent as Table} from '../models-with-events/table';
 import {createCardsWithEvents as createCards} from '../models-with-events/create-cards';
 import {randomizeArray} from '../models/create-cards';
 import {emitter as modelEventEmitter} from '../models-with-events/emitter';
-import {PromiseQueue} from '../promise-queue';
+import {JobQueue} from '../job-queue';
 // import {debounce} from 'underscore';
 
 export default class MainScene extends Phaser.Scene
 {
   private __table:Table | undefined;
   private __tableGameObject:TableGameObject | undefined;
-  private _cardAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
-  private _hintAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
+  private _cardAnimationQueue:JobQueue<void> = new JobQueue<void>();
+  private _hintAnimationQueue:JobQueue<void> = new JobQueue<void>();
   // private _dragPileAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
 
   constructor () {

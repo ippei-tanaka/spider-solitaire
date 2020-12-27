@@ -29,12 +29,12 @@ test('JobQueue callbacks', done => {
 
   expect(queue.isProcessing).toBe(false);
 
-  queue.add(resolve => setTimeout(() => resolve(123), 1));
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(123), 1)));
 
   expect(queue.isProcessing).toBe(true);
 
-  queue.add(resolve => setTimeout(() => resolve(456), 1));
-  queue.add(resolve => setTimeout(() => resolve(789), 1));
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(456), 1)));
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(789), 1)));
 });
 
 test('JobQueue reuse', done => {
@@ -54,7 +54,7 @@ test('JobQueue reuse', done => {
     if (!firstQueueDone)
     {
       firstQueueDone = true;
-      queue.add(resolve => setTimeout(() => resolve(789), 1));
+      queue.add(async () => new Promise(resolve => setTimeout(() => resolve(789), 1)));
     } else {
       expect(onQueueStartCallback).toHaveBeenCalledTimes(2);
       expect(onJobStartCallback).toHaveBeenCalledTimes(3);
@@ -67,8 +67,8 @@ test('JobQueue reuse', done => {
     }
   });
 
-  queue.add(resolve => setTimeout(() => resolve(123), 1));
-  queue.add(resolve => setTimeout(() => resolve(456), 1));
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(123), 1)));
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(456), 1)));
 });
 
 test('JobQueue cancel', done => {
@@ -89,20 +89,21 @@ test('JobQueue cancel', done => {
     expect(onJobStartCallback).toHaveBeenCalledTimes(2);
     expect(onJobEndCallback).toHaveBeenCalledTimes(1);
     expect(onJobEndCallback).toHaveBeenNthCalledWith(1, 123);
-    // expect(onJobEndCallback).toHaveBeenNthCalledWith(2, 456);
     expect(onQueueCancelCallback).toHaveBeenCalledTimes(1);
     expect(onQueueEndCallback).not.toHaveBeenCalled();
     done()
   });
 
-  queue.add(resolve => setTimeout(() => resolve(123), 1));
-  queue.add((resolve, reject, onQueueCancel) => {
-    const timeout = setTimeout(() => resolve(456), 100);
-    onQueueCancel(() => {
-      onQueueCancelCallback();
-      clearTimeout(timeout);
-    });
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(123), 1)));
+  queue.add(async (onQueueCancel) => {
+    return new Promise(resolve => {
+      const timeout = setTimeout(() => resolve(456), 100);
+      onQueueCancel(() => {
+        onQueueCancelCallback();
+        clearTimeout(timeout);
+      });
+    })
   });
-  queue.add(resolve => setTimeout(() => resolve(789), 1));
+  queue.add(async () => new Promise(resolve => setTimeout(() => resolve(789), 1)));
   setTimeout(() => queue.cancel(), 50);
 });
