@@ -119,18 +119,15 @@ export class PileGameObject extends Phaser.GameObjects.Container
     return this._zone;
   }
 
-  /*
   getNewFrontCardGameObjectPosition ()
   {
     return {
       x: 0,
       y: !this._isSpread ? 0 : this._cardGameObjects.reduce((prev, cardGameObject) => {
         return prev + (cardGameObject.isFaceUp ? this._faceUpCardGap : this._faceDownCardGap);
-      }, 0),
-      depth: this._cardGameObjects.length
+      }, 0)
     }
   }
-  */
 
   private _getAdjustedCardGameObjectPositions ()
   {
@@ -236,14 +233,14 @@ export class PileGameObject extends Phaser.GameObjects.Container
     this._cardGameObjects = [...this._cardGameObjects, ...cardGameObjects];
   }
 
-  private _getFrontGameObjects ({size}:{size:number})
+  getFrontGameObjects ({size}:{size:number})
   {
     return this._cardGameObjects.slice(-size);
   }
 
-  private _removeFrontGameObjects ({size}:{size:number})
+  removeFrontGameObjects ({size}:{size:number})
   {
-    const cardGameObjects = this._getFrontGameObjects({size});
+    const cardGameObjects = this.getFrontGameObjects({size});
     const worldPosition = getWorldPosition(this);
     for (let index = 0; index < cardGameObjects.length; index++)
     {
@@ -258,8 +255,8 @@ export class PileGameObject extends Phaser.GameObjects.Container
 
   drawFrontCardGameObjects ({size}:{size:number})
   {
-    const cardGameObjects = this._getFrontGameObjects({size});
-    this._removeFrontGameObjects({size});
+    const cardGameObjects = this.getFrontGameObjects({size});
+    this.removeFrontGameObjects({size});
     return cardGameObjects;
   }
 

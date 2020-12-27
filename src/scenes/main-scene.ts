@@ -17,8 +17,9 @@ export default class MainScene extends Phaser.Scene
 {
   private __table:Table | undefined;
   private __tableGameObject:TableGameObject | undefined;
-  private _cardAnimationBetweenPilesQueue:PromiseQueue<void> = new PromiseQueue<void>();
-  private _dragPileAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
+  private _cardAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
+  private _hintAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
+  // private _dragPileAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
 
   constructor () {
     super('main');
@@ -56,6 +57,7 @@ export default class MainScene extends Phaser.Scene
       tableauPilesIds: this._table.tableauPiles.map(p => p.id),
       discardPilesIds: this._table.discardPiles.map(p => p.id),
       dragPileId: "drag-pile",
+      hintPileId: "hint-pile",
       cardGameObjects: this._table.cards.map(card => new CardGameObject({
         scene: this,
         x: 0,
@@ -78,11 +80,11 @@ export default class MainScene extends Phaser.Scene
       if (undoButton.active) this._table.undo();
     });
     this.children.add(undoButton);
-    this._cardAnimationBetweenPilesQueue.onStart(() => {
+    this._cardAnimationQueue.onStart(() => {
       undoButton.setActive(false);
       undoButton.setAlpha(0.5);
     });
-    this._cardAnimationBetweenPilesQueue.onComplete(() => {
+    this._cardAnimationQueue.onComplete(() => {
       undoButton.setActive(true);
       undoButton.setAlpha(1);
     });
@@ -99,15 +101,16 @@ export default class MainScene extends Phaser.Scene
       label: 'HINT'
     });
     hintButton.on('pointerdown', () => {
-      if (hintButton.active)
-        console.log(this._table.getPossibleMovesBetweenTableauPiles());
+      if (hintButton.active) {
+        this.showHints();
+      }
     });
     this.children.add(hintButton);
-    this._cardAnimationBetweenPilesQueue.onStart(() => {
+    this._cardAnimationQueue.onStart(() => {
       hintButton.setActive(false);
       hintButton.setAlpha(0.5);
     });
-    this._cardAnimationBetweenPilesQueue.onComplete(() => {
+    this._cardAnimationQueue.onComplete(() => {
       hintButton.setActive(true);
       hintButton.setAlpha(1);
     });
@@ -124,14 +127,17 @@ export default class MainScene extends Phaser.Scene
 
     this._table.startGame();
 
+    this.input.on('pointerdown', () => {
+      console.log(1231);
+    });
   }
 
   onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})
   {
-    if (!this._cardAnimationBetweenPilesQueue.isProcessing) {
+    if (!this._cardAnimationQueue.isProcessing) {
       this.addHighlightToCardGameObject({cardGameObject});
     } else {
-      this._cardAnimationBetweenPilesQueue.add(async () => {
+      this._cardAnimationQueue.add(async () => {
         if(this.input.hitTestPointer(pointer)[0] === cardGameObject) {
           this.addHighlightToCardGameObject({cardGameObject});
         }
@@ -205,7 +211,7 @@ export default class MainScene extends Phaser.Scene
         dragPileGameObject.x = fromPileGameObject.x;
         dragPileGameObject.y = fromPileGameObject.y + y;
         dragPileGameObject.placeCardGameObjects({cardGameObjects: fromPileGameObject.drawFrontCardGameObjects({size})});
-        this._dragPileAnimationQueue.add(async () => {
+        this._cardAnimationQueue.add(async () => {
           await Promise.all([
             dragPileGameObject.adjustCardGameObjectPositionsWithAnimation(),
             dragPileGameObject.expandWithAnimation()
@@ -263,7 +269,7 @@ export default class MainScene extends Phaser.Scene
         });
         dragPileGameObject.setActive(false);
       } else {
-        this._cardAnimationBetweenPilesQueue.add(async () => {
+        this._cardAnimationQueue.add(async () => {
           await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
           dragPileGameObject.setActive(false);
         });
@@ -271,7 +277,7 @@ export default class MainScene extends Phaser.Scene
     }
   }
 
-  onCardDragEnd ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})
+  onCardDragEnd ({cardGameObject}:{cardGameObject:CardGameObject})
   {
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
@@ -284,7 +290,7 @@ export default class MainScene extends Phaser.Scene
       const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.id);
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
-      this._cardAnimationBetweenPilesQueue.add(async () => {
+      this._cardAnimationQueue.add(async () => {
         await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
         dragPileGameObject.setActive(false);
       });
@@ -297,7 +303,7 @@ export default class MainScene extends Phaser.Scene
     // const toPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === to.id);
     const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
 
-    this._cardAnimationBetweenPilesQueue.add(async () => {
+    this._cardAnimationQueue.add(async () => {
       const cardGameObjects = fromPileGameObject.drawFrontCardGameObjects({size});
       toPileGameObject.placeCardGameObjects({cardGameObjects});
       this._tableGameObject.bringToTop(toPileGameObject);
@@ -308,7 +314,7 @@ export default class MainScene extends Phaser.Scene
     });
 
     if (this._table.isClear) {
-      this._cardAnimationBetweenPilesQueue.add(async () => {
+      this._cardAnimationQueue.add(async () => {
         alert("You beat the game!!!");
       });
     }
@@ -317,8 +323,61 @@ export default class MainScene extends Phaser.Scene
   onFlipOverCard ({card}:{card:Card}) {
     const cardGarmObject = this._tableGameObject.cardGameObjects.find(c => c.name === card.id);
     if (cardGarmObject) {
-      this._cardAnimationBetweenPilesQueue.add(() => cardGarmObject.flipOver(card.isFaceUp));
+      this._cardAnimationQueue.add(() => cardGarmObject.flipOver(card.isFaceUp));
     };
+  }
+
+  showHints ()
+  {
+    const moves = this._table.getPossibleMovesBetweenTableauPiles();
+    const hintPileGameObject = this._tableGameObject.hintPileGameObject;
+    for (let {from, to, size} of moves)
+    {
+      this._hintAnimationQueue.add(async () =>
+      {
+        const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
+        const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
+        // const positions = fromPileGameObject.getAdjustedCardGameObjectPositions();
+        const originalFrontCardGameObjects = fromPileGameObject.getFrontGameObjects({size});
+        // const originalCardGameObjects = fromPileGameObject.cardGameObjects;
+        // console.log(positions);
+
+        hintPileGameObject.x = fromPileGameObject.x;
+        hintPileGameObject.y = fromPileGameObject.y + originalFrontCardGameObjects[originalFrontCardGameObjects.length - 1].y;
+        hintPileGameObject.placeCardGameObjects({cardGameObjects: originalFrontCardGameObjects.map((c, index) => {
+          const cardGameObject = new CardGameObject({
+            x: c.x,
+            y: c.y,
+            rank: c.rank,
+            suit: c.suit,
+            isFaceUp: c.isFaceUp,
+            name: '',
+            scene: this
+          });
+          // if (originalCardGameObjects.length - index > size) cardGameObject.setAlpha(0);
+          return cardGameObject;
+        })});
+
+        hintPileGameObject.adjustCardGameObjectPositions();
+        hintPileGameObject.setAlpha(0.8);
+        this._tableGameObject.bringToTop(hintPileGameObject);
+
+        await new Promise(res => {
+          this.tweens.add({
+            targets: hintPileGameObject,
+            props: {
+              x: toPileGameObject.x,
+              y: toPileGameObject.y + toPileGameObject.getNewFrontCardGameObjectPosition().y
+            },
+            duration: 800,
+            completeDelay: 400,
+            onComplete: res
+          });
+        });
+
+        hintPileGameObject.drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
+      });
+    }
   }
 
 }

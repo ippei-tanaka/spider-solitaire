@@ -9,6 +9,7 @@ export type TableGameObjectSettings = {
   tableauPilesIds:string[],
   discardPilesIds:string[],
   dragPileId:string,
+  hintPileId:string,
   cardGameObjects: CardGameObject[]
 };
 
@@ -21,6 +22,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
   private _tableauPileGameObjects:PileGameObject[] = [];
   private _discardPileGameObjects:PileGameObject[] = [];
   private _dragPileGameObject:PileGameObject;
+  private _hintPileGameObject:PileGameObject;
 
   constructor ({
     scene,
@@ -29,6 +31,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
     tableauPilesIds,
     discardPilesIds,
     dragPileId,
+    hintPileId,
     cardGameObjects
   }:TableGameObjectSettings)
   {
@@ -105,6 +108,19 @@ export class TableGameObject extends Phaser.GameObjects.Container
     this._dragPileGameObject = _dragPileGameObject;
     this._dragPileGameObject.setActive(false);
     this.add(_dragPileGameObject);
+
+    const _hintPileGameObject = new PileGameObject({
+      scene: this.scene,
+      x: 0,
+      y: 0,
+      name: hintPileId,
+      isSpread: true,
+      label: 'hint'
+    });
+    this._pileGameObjects = [...this._pileGameObjects, _hintPileGameObject];
+    this._hintPileGameObject = _hintPileGameObject;
+    this._hintPileGameObject.setActive(false);
+    this.add(_hintPileGameObject);
   }
 
   get cardGameObjects ()
@@ -155,5 +171,10 @@ export class TableGameObject extends Phaser.GameObjects.Container
   get dragPileGameObject ()
   {
     return this._dragPileGameObject;
+  }
+
+  get hintPileGameObject ()
+  {
+    return this._hintPileGameObject;
   }
 }

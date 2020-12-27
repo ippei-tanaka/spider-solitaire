@@ -1,6 +1,11 @@
-export type PromiseQueueEvents = {
-  QUEUE_PROCESS_START: {
+export type PromiseQueueEvents<T> = {
+  QUEUE_START: {
   },
-  QUEUE_PROCESS_END: {
+  QUEUE_END: {
+  },
+  PROMISE_START: {
+  },
+  PROMISE_END: {
+    value: T
   },
 }

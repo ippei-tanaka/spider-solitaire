@@ -52,6 +52,7 @@ export type CardGameObjectArgs = {
   y:number,
   suit:Suit,
   rank:number,
+  isFaceUp?: boolean,
   name:string
 };
 
@@ -72,6 +73,7 @@ export class CardGameObject extends Container
     y,
     suit,
     rank,
+    isFaceUp,
     name
   }:CardGameObjectArgs)
   {
@@ -80,6 +82,7 @@ export class CardGameObject extends Container
     this.name = name;
     this._suit = suit;
     this._rank = rank;
+    this.back.visible = !isFaceUp;
   }
 
   get suit ()
