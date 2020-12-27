@@ -114,6 +114,18 @@ export default class MainScene extends Phaser.Scene
       hintButton.setActive(true);
       hintButton.setAlpha(1);
     });
+    this._hintAnimationQueue.onQueueStart(() => {
+      hintButton.setActive(false);
+      hintButton.setAlpha(0.5);
+    });
+    this._hintAnimationQueue.onQueueEnd(() => {
+      hintButton.setActive(true);
+      hintButton.setAlpha(1);
+    });
+    this._hintAnimationQueue.onQueueCancel(() => {
+      hintButton.setActive(true);
+      hintButton.setAlpha(1);
+    });
 
     gameObjectEventEmitter.on("CARD_POINTEROVER", this.onCardPointerOver.bind(this));
     gameObjectEventEmitter.on("CARD_POINTEROUT", this.onCardPointerOut.bind(this));
@@ -150,24 +162,26 @@ export default class MainScene extends Phaser.Scene
 
   addHighlightToCardGameObject ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    // const targetPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
-    const targetPile = this._table.getPileByCardId(cardGameObject.name);
+    const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
 
     if (cardGameObject.isFaceUp
-      && this._table.tableauPiles.includes(targetPile))
+      && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject))
     {
-      // const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === targetPile.id);
+      const targetPile = this._table.getPileByCardId(cardGameObject.name);
       const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.id);
       const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
-
       if (Pile.checkIfCardsAreDescending({cards: targetPile.cards.slice(-size), faceUp: true, inSuit: true}))
       {
         cardGameObject.addHighlight();
       }
     }
-    else if (this._table.frontDrawPile === targetPile)
+    else if (this._table.frontDrawPile)
     {
-      cardGameObject.addHighlight();
+      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.id);
+      if (targetPileGameObject === frontDrawPileGameObject)
+      {
+        cardGameObject.addHighlight();
+      }
     }
   }
 
@@ -179,14 +193,14 @@ export default class MainScene extends Phaser.Scene
   onCardPointerDown ({cardGameObject}:{cardGameObject:CardGameObject})
   {
     if (!cardGameObject.isHighLighted) return;
-
-    // const targetPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
-    
-    const targetPile = this._table.getPileByCardId(cardGameObject.name);
-
-    if (this._table.frontDrawPile === targetPile)
+    const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
+    if (this._table.frontDrawPile)
     {
-      this._table.dealCardsFromDrawPile();
+      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.id);
+      if (frontDrawPileGameObject === targetPileGameObject)
+      {
+        this._table.dealCardsFromDrawPile();
+      }
     }
   }
 
@@ -194,15 +208,14 @@ export default class MainScene extends Phaser.Scene
   {
     if (!cardGameObject.isHighLighted) return;
 
-    // const targetPile = this._table.getPileBy(pile => pile.cards.find(card => card.id === cardGameObject.name));
-    const targetPile = this._table.getPileByCardId(cardGameObject.name);
+    const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
 
     if (cardGameObject.isFaceUp
-      && this._table.tableauPiles.includes(targetPile)
+      && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject)
       && !dragPileGameObject.active)
     {
-      // const fromPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.name === targetPile.id);
+      const targetPile = this._table.getPileByCardId(cardGameObject.name);
       const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.id);
       const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
 
@@ -330,9 +343,11 @@ export default class MainScene extends Phaser.Scene
     const moves = this._table.getPossibleMovesBetweenTableauPiles();
     const hintPileGameObject = this._tableGameObject.hintPileGameObject;
     const clearHintPileGameObject = () => {
-      hintPileGameObject.drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
-      hintPileGameObject.x = -100000;
-      hintPileGameObject.y = -100000;
+      const cardGameObjects = hintPileGameObject
+        .drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
+      cardGameObjects.forEach(c => c.destroy());
+      // hintPileGameObject.x = -100000;
+      // hintPileGameObject.y = -100000;
     };
 
     for (let {from, to, size} of moves)
@@ -341,14 +356,14 @@ export default class MainScene extends Phaser.Scene
       {
         const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
         const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
-        const originalFrontCardGameObjects = fromPileGameObject.getFrontGameObjects({size});
+        const frontCardGameObjects = fromPileGameObject.getFrontGameObjects({size});
 
         hintPileGameObject.x = fromPileGameObject.x;
-        hintPileGameObject.y = fromPileGameObject.y + originalFrontCardGameObjects[originalFrontCardGameObjects.length - 1].y;
-        hintPileGameObject.placeCardGameObjects({cardGameObjects: originalFrontCardGameObjects.map((c, index) => {
+        hintPileGameObject.y = fromPileGameObject.y + frontCardGameObjects[0].y;
+        hintPileGameObject.placeCardGameObjects({cardGameObjects: frontCardGameObjects.map((c) => {
           const cardGameObject = new CardGameObject({
-            x: c.x,
-            y: c.y,
+            x: 0,
+            y: 0,
             rank: c.rank,
             suit: c.suit,
             isFaceUp: c.isFaceUp,
