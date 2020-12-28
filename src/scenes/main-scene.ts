@@ -55,10 +55,10 @@ export default class MainScene extends Phaser.Scene
     // console.log(this.sys.game.canvas.width);
 
     this.__table = new Table({
-      numberOfTableauPiles: 4,
-      numberOfDrawPiles: 1,
+      numberOfTableauPiles: 10,
+      numberOfDrawPiles: 5,
       cards: createCards({
-        numberOfDecksUsed: 1,
+        numberOfDecksUsed: 8,
         numberOfSuits: 1
       }).map(card => {
         card.onFlipOver(this.onFlipOverCard.bind(this))
@@ -101,9 +101,9 @@ export default class MainScene extends Phaser.Scene
 
     const undoButton = new Button({
       scene: this,
-      x: 100,
-      y: 600,
-      label: 'UNDO'
+      x: 77,
+      y: 520,
+      label: 'Undo(U)'
     });
     undoButton.on('pointerdown', () => this._table.undo());
     this.children.add(undoButton);
@@ -121,9 +121,9 @@ export default class MainScene extends Phaser.Scene
 
     const hintButton = new Button({
       scene: this,
-      x: 250,
-      y: 600,
-      label: 'HINT'
+      x: 206,
+      y: 520,
+      label: 'Hint(H)'
     });
     hintButton.on('pointerdown', () => this.showHints());
     this.children.add(hintButton);
@@ -149,10 +149,10 @@ export default class MainScene extends Phaser.Scene
     this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
     this._table.startGame();
 
-    const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-    dKey.on('down', (event:KeyboardEvent) => {
-      this.scene.start('gameover');
-    });
+    // const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    // dKey.on('down', (event:KeyboardEvent) => {
+    //   this.scene.start('gameover');
+    // });
   }
 
   onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Pointer})

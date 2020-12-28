@@ -8,11 +8,18 @@ const config = {
   // title: "Game Of Life",
   // url: "https://github.com/digitsensitive/phaser3-typescript",
   // version: "1.0",
-  width: 1000,
-  height: 800,
+  // width: 800,
+  // height: 600,
   type: Phaser.AUTO,
   // parent: "game",
-  scene: [BootScene, MainScene, GameOverScene],
+  scale: {
+    mode: Phaser.Scale.FIT,
+    // parent: 'phaser-example',
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 1000,
+    height: 563
+  },
+  scene: [MainScene,  BootScene, GameOverScene],
   backgroundColor: "#73ba2c",
   // render: { pixelArt: false, antialias: true }
   // physics: {

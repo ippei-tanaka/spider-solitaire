@@ -56,8 +56,8 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const drawPile = new PileGameObject({
         scene: this.scene,
-        x:70 + index * 20,
-        y:100,
+        x:55 + index * 20,
+        y:77,
         name: drawPilesIds[index],
         label: 'draw' + index
       });
@@ -70,11 +70,12 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const tableauPile = new PileGameObject({
         scene: this.scene,
-        x:70 + index * 90,
-        y:250,
+        x:55 + index * 90,
+        y:210,
         name: tableauPilesIds[index],
         isSpread: true,
         isDropTarget: true,
+        showDropZone: true,
         label: 'tableau' + index
       });
       this._pileGameObjects = [...this._pileGameObjects, tableauPile];
@@ -86,8 +87,9 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const discardPile = new PileGameObject({
         scene: this.scene,
-        x:300 + index * 90,
-        y:100,
+        x:235 + index * 90,
+        y:77,
+        showDropZone: true,
         name: discardPilesIds[index],
         label: 'discard' + index
       });

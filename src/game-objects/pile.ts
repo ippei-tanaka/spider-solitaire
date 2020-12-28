@@ -9,6 +9,7 @@ export type PileGameObjectArgs = {
   name:string,
   isSpread?:boolean,
   isDropTarget?:boolean,
+  showDropZone?:boolean,
   label?:string
   // isInteractive?:boolean
 }
@@ -27,9 +28,9 @@ export class PileGameObject extends Phaser.GameObjects.Container
   private _zone:Phaser.GameObjects.Zone | undefined;
   private _zoneRect:Phaser.GameObjects.Rectangle | undefined;
   // private _isInteractive:boolean = false;
-  private _faceDownCardGap:number = 15;
-  private _faceUpCardGap:number = 26;
-  private _maxHeightOfGaps:number = 200;
+  private readonly _faceDownCardGap:number = 15;
+  private readonly _faceUpCardGap:number = 26;
+  private readonly _maxHeightOfGaps:number = 380 - CardGameObject.HEIGHT;
 
   constructor ({
     scene,
@@ -38,6 +39,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
     name,
     isSpread,
     isDropTarget,
+    showDropZone,
     label
     // isInteractive
   }:PileGameObjectArgs)
@@ -52,7 +54,16 @@ export class PileGameObject extends Phaser.GameObjects.Container
 
     if (isDropTarget) {
       this._zone = this.renderZone();
+    }
+
+    if (showDropZone)
+    {
       this._zoneRect = this.renderZoneRect();
+    }
+
+    if (isDropTarget || showDropZone)
+    {
+      this.resizeZone();
     }
 
     // if (isInteractive)
@@ -76,7 +87,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
 
   private renderZoneRect ()
   {
-    const rect = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 1, 1, 0xcccccc);
+    const rect = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 1, 1, 0xffffff, 0.5);
     this.add(rect);
     return rect;
   }

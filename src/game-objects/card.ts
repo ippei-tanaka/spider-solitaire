@@ -202,7 +202,7 @@ export class CardGameObject extends Container
 
   addHighlight ()
   {
-    this.frame.setStrokeStyle(2, 0xff5588);
+    this.frame.setStrokeStyle(2, 0xff0000);
     this._isHighLighted = true;
   }
 
