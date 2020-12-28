@@ -7,6 +7,8 @@ const {
 
 export class Button extends Container
 {
+  private _disabled:boolean = false;
+
   constructor ({
     scene,
     x,
@@ -37,4 +39,22 @@ export class Button extends Container
     this.setInteractive();
   }
 
+  disable ()
+  {
+    this._disabled = true;
+    this.setAlpha(0.5);
+    this.disableInteractive();
+  }
+
+  enable ()
+  {
+    this._disabled = false;
+    this.setAlpha(1);
+    this.setInteractive();
+  }
+
+  get isDisabled ()
+  {
+    return this._disabled;
+  }
 }

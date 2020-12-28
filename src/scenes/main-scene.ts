@@ -76,22 +76,18 @@ export default class MainScene extends Phaser.Scene
       y: 600,
       label: 'UNDO'
     });
-    undoButton.on('pointerdown', () => {
-      if (undoButton.active) this._table.undo();
-    });
+    undoButton.on('pointerdown', () => this._table.undo());
     this.children.add(undoButton);
-    this._cardAnimationQueue.onQueueStart(() => {
-      undoButton.setActive(false);
-      undoButton.setAlpha(0.5);
-    });
-    this._cardAnimationQueue.onQueueEnd(() => {
-      undoButton.setActive(true);
-      undoButton.setAlpha(1);
-    });
+    this._cardAnimationQueue.onQueueStart(() => undoButton.disable());
+    this._cardAnimationQueue.onQueueEnd(() => undoButton.enable());
+    this._cardAnimationQueue.onQueueCancel(() => undoButton.enable());
+    this._hintAnimationQueue.onQueueStart(() => undoButton.disable());
+    this._hintAnimationQueue.onQueueEnd(() => undoButton.enable());
+    this._hintAnimationQueue.onQueueCancel(() => undoButton.enable());
 
     const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
     uKey.on('down', (event:KeyboardEvent) => {
-      if (undoButton.active) this._table.undo();
+      if (!undoButton.isDisabled) this._table.undo();
     });
 
     const hintButton = new Button({
@@ -100,31 +96,25 @@ export default class MainScene extends Phaser.Scene
       y: 600,
       label: 'HINT'
     });
-    hintButton.on('pointerdown', () => {
-      if (hintButton.active) {
-        this.showHints();
-      }
-    });
+    hintButton.on('pointerdown', () => this.showHints());
     this.children.add(hintButton);
-    this._cardAnimationQueue.onQueueStart(() => {
-      hintButton.setActive(false);
-      hintButton.setAlpha(0.5);
+    this._cardAnimationQueue.onQueueStart(() => hintButton.disable());
+    this._cardAnimationQueue.onQueueEnd(() => hintButton.enable());
+    this._cardAnimationQueue.onQueueCancel(() => hintButton.enable());
+    this._hintAnimationQueue.onQueueStart(() => hintButton.disable());
+    this._hintAnimationQueue.onQueueEnd(() => hintButton.enable());
+    this._hintAnimationQueue.onQueueCancel(() => hintButton.enable());
+
+    const hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    hKey.on('down', (event:KeyboardEvent) => {
+      if (!hintButton.isDisabled) this.showHints();
     });
-    this._cardAnimationQueue.onQueueEnd(() => {
-      hintButton.setActive(true);
-      hintButton.setAlpha(1);
-    });
-    this._hintAnimationQueue.onQueueStart(() => {
-      hintButton.setActive(false);
-      hintButton.setAlpha(0.5);
-    });
-    this._hintAnimationQueue.onQueueEnd(() => {
-      hintButton.setActive(true);
-      hintButton.setAlpha(1);
-    });
-    this._hintAnimationQueue.onQueueCancel(() => {
-      hintButton.setActive(true);
-      hintButton.setAlpha(1);
+
+    this.input.on('pointerdown', (pointer:Phaser.Input.Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
+      if(!gameObjects.includes(hintButton) && this._hintAnimationQueue.isProcessing)
+      {
+        this._hintAnimationQueue.cancel();
+      }
     });
 
     gameObjectEventEmitter.on("CARD_POINTEROVER", this.onCardPointerOver.bind(this));
@@ -138,13 +128,6 @@ export default class MainScene extends Phaser.Scene
     modelEventEmitter.on("FLIP_OVER_CARD", this.onFlipOverCard.bind(this));
 
     this._table.startGame();
-
-    this.input.on('pointerdown', (pointer:Phaser.Input.Pointer) => {
-      if(!this.input.hitTestPointer(pointer).includes(hintButton))
-      {
-        this._hintAnimationQueue.cancel();
-      }
-    });
   }
 
   onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})
@@ -346,8 +329,6 @@ export default class MainScene extends Phaser.Scene
       const cardGameObjects = hintPileGameObject
         .drawFrontCardGameObjects({size: hintPileGameObject.cardGameObjects.length});
       cardGameObjects.forEach(c => c.destroy());
-      // hintPileGameObject.x = -100000;
-      // hintPileGameObject.y = -100000;
     };
 
     for (let {from, to, size} of moves)

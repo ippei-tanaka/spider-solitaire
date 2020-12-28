@@ -4,7 +4,7 @@ export type JobQueueEvents<T> = {
   QUEUE_END: {
   },
   QUEUE_CANCEL: {
-    wasProcessing: boolean
+    actuallyCancelled: boolean
   },
   JOB_START: {
   },

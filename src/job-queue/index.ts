@@ -140,11 +140,11 @@ export class JobQueue<T>
     this._currentIndex = 0;
 
     if (!hasStarted || !job || !job.isProcessing) {
-      this._emitter.emit("QUEUE_CANCEL", {wasProcessing: false});
+      this._emitter.emit("QUEUE_CANCEL", {actuallyCancelled: false});
     } else {
       job.onEndCallback = () => {};
       job.runQueueCancelCallback();
-      this._emitter.emit("QUEUE_CANCEL", {wasProcessing: true});
+      this._emitter.emit("QUEUE_CANCEL", {actuallyCancelled: true});
     }
   }
 
@@ -158,7 +158,7 @@ export class JobQueue<T>
     this._emitter.on('QUEUE_END', callback);
   }
 
-  onQueueCancel (callback: () => void)
+  onQueueCancel (callback: ({actuallyCancelled}:{actuallyCancelled: boolean}) => void)
   {
     this._emitter.on('QUEUE_CANCEL', callback);
   }
