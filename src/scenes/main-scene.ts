@@ -65,7 +65,7 @@ export default class MainScene extends Phaser.Scene
         return card;
       })
     });
-console.log(1231);
+
     this.__tableGameObject = new TableGameObject({
       scene: this,
       deckPileId: this._table.deckPile.id,
@@ -98,6 +98,27 @@ console.log(1231);
 
     this.__cardAnimationQueue = new JobQueue<void>();
     this.__hintAnimationQueue = new JobQueue<void>();
+
+    /*
+    const disableCardGameObject = () => {
+      this._tableGameObject.cardGameObjects.forEach(cardGameObject => {
+        cardGameObject.removeInteractive();
+      });
+    }
+
+    const enableCardGameObject = () => {
+      this._tableGameObject.cardGameObjects.forEach(cardGameObject => {
+        cardGameObject.setInteractive();
+      });
+    }
+
+    this._cardAnimationQueue.onQueueStart(() => disableCardGameObject());
+    this._cardAnimationQueue.onQueueEnd(() => enableCardGameObject());
+    this._cardAnimationQueue.onQueueCancel(() => enableCardGameObject());
+    this._hintAnimationQueue.onQueueStart(() => disableCardGameObject());
+    this._hintAnimationQueue.onQueueEnd(() => enableCardGameObject());
+    this._hintAnimationQueue.onQueueCancel(() => enableCardGameObject());
+    */
 
     const undoButton = new Button({
       scene: this,
@@ -151,7 +172,8 @@ console.log(1231);
 
     const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     dKey.on('down', (event:KeyboardEvent) => {
-      this.scene.start('gameover');
+      this.scene.pause();
+      this.scene.launch('gameover');
     });
   }
 
@@ -159,13 +181,13 @@ console.log(1231);
   {
     if (!this._cardAnimationQueue.isProcessing) {
       this.addHighlightToCardGameObject({cardGameObject});
-    } else {
+    }/* else {
       this._cardAnimationQueue.add(async () => {
         if(this.input.hitTestPointer(pointer)[0] === cardGameObject) {
           this.addHighlightToCardGameObject({cardGameObject});
         }
       });
-    }
+    }*/
   }
 
   addHighlightToCardGameObject ({cardGameObject}:{cardGameObject:CardGameObject})
@@ -202,7 +224,7 @@ console.log(1231);
   {
     // if (!cardGameObject.isHighLighted) return;
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
-    if (this._table.frontDrawPile)
+    if (this._table.frontDrawPile && !this._cardAnimationQueue.isProcessing)
     {
       const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.id);
       if (frontDrawPileGameObject === targetPileGameObject)
