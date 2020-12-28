@@ -1,17 +1,23 @@
 import Phaser from "phaser";
-import {TableGameObjectWithEvent as TableGameObject} from '../game-objects-with-events/table';
+import {TableGameObject} from '../game-objects/table';
 // import {PileGameObjectWithEvent as PileGameObject} from '../game-objects-with-events/pile';
-import {CardGameObjectWithEvent as CardGameObject} from '../game-objects-with-events/card';
-import {emitter as gameObjectEventEmitter} from '../game-objects-with-events/emitter';
+import {CardGameObject} from '../game-objects/card';
+// import {emitter as gameObjectEventEmitter} from '../game-objects-with-events/emitter';
 import {Button} from '../game-objects/button';
-import {CardWithEvent as Card} from '../models-with-events/card';
-import {PileWithEvent as Pile} from '../models-with-events/pile';
+import {Card} from '../models/card';
+import {Pile} from '../models/pile';
+// import {CardWithEvent} from '../models-with-events/card';
+// import {PileWithEvent} from '../models-with-events/pile';
 import {TableWithEvent as Table} from '../models-with-events/table';
+// import {Table} from '../models/table';
 import {createCardsWithEvents as createCards} from '../models-with-events/create-cards';
 import {randomizeArray} from '../models/create-cards';
-import {emitter as modelEventEmitter} from '../models-with-events/emitter';
+// import {emitter as modelEventEmitter} from '../models-with-events/emitter';
 import {JobQueue} from '../job-queue';
 // import {debounce} from 'underscore';
+
+type Pointer = Phaser.Input.Pointer;
+type Zone = Phaser.GameObjects.Zone;
 
 export default class MainScene extends Phaser.Scene
 {
@@ -19,61 +25,44 @@ export default class MainScene extends Phaser.Scene
   private __tableGameObject:TableGameObject | undefined;
   private __cardAnimationQueue:JobQueue<void> | undefined;
   private __hintAnimationQueue:JobQueue<void> | undefined;
-  // private _dragPileAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
 
   constructor () {
     super('main');
   }
 
   private get _table () {
-    if (!this.__table) {
-      throw new Error('Table is not ready.');
-    }
+    if (!this.__table) throw new Error('Table is not ready.');
     return this.__table;
   }
 
   private get _tableGameObject () {
-    if (!this.__tableGameObject) {
-      throw new Error('Table Game Object is not ready.');
-    }
+    if (!this.__tableGameObject) throw new Error('Table Game Object is not ready.');
     return this.__tableGameObject;
   }
 
   private get _cardAnimationQueue () {
-    if (!this.__cardAnimationQueue) {
-      throw new Error('cardAnimationQueue is not ready.');
-    }
+    if (!this.__cardAnimationQueue) throw new Error('cardAnimationQueue is not ready.');
     return this.__cardAnimationQueue;
   }
 
   private get _hintAnimationQueue () {
-    if (!this.__hintAnimationQueue) {
-      throw new Error('hintAnimationQueue is not ready.');
-    }
+    if (!this.__hintAnimationQueue) throw new Error('hintAnimationQueue is not ready.');
     return this.__hintAnimationQueue;
   }
 
-  /*
-  init ()
-  {
-    this.__table = undefined;
-    this.__tableGameObject = undefined;
-    this.__cardAnimationQueue = undefined;
-    this.__hintAnimationQueue = undefined;
-    console.log('init', this.__table);
-  }
-  */
-
   create ()
   {
-    // console.log('create', this.__table);
-    // console.log(this.__hintAnimationQueue);
+    console.log(this.sys.game.canvas.width);
+
     this.__table = new Table({
       numberOfTableauPiles: 4,
       numberOfDrawPiles: 1,
       cards: createCards({
         numberOfDecksUsed: 1,
         numberOfSuits: 1
+      }).map(card => {
+        card.onFlipOver(this.onFlipOverCard.bind(this))
+        return card;
       })
     });
 
@@ -85,14 +74,24 @@ export default class MainScene extends Phaser.Scene
       discardPilesIds: this._table.discardPiles.map(p => p.id),
       dragPileId: "drag-pile",
       hintPileId: "hint-pile",
-      cardGameObjects: this._table.cards.map(card => new CardGameObject({
-        scene: this,
-        x: 0,
-        y: 0,
-        suit: card.suit,
-        rank: card.rank,
-        name: card.id
-      }))
+      cardGameObjects: this._table.cards.map(card => {
+        const cardGameObject = new CardGameObject({
+          scene: this,
+          x: 0,
+          y: 0,
+          suit: card.suit,
+          rank: card.rank,
+          name: card.id
+        });
+        cardGameObject.on("pointerover", (pointer:Pointer) => this.onCardPointerOver.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("pointerout", (pointer:Pointer) => this.onCardPointerOut.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("pointerdown", (pointer:Pointer) => this.onCardPointerDown.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("dragstart", (pointer:Pointer) => this.onCardDragStart.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("drag", (pointer:Pointer) => this.onCardDrag.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("drop", (pointer:Pointer, zone:Zone) => this.onCardDrop.call(this, {cardGameObject, pointer, zone}));
+        cardGameObject.on("dragend", (pointer:Pointer) => this.onCardDragEnd.call(this, {cardGameObject, pointer}));
+        return cardGameObject;
+      })
     });
 
     this.children.add(this._tableGameObject);
@@ -140,27 +139,23 @@ export default class MainScene extends Phaser.Scene
       if (!hintButton.isDisabled) this.showHints();
     });
 
-    this.input.on('pointerdown', (pointer:Phaser.Input.Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
+    this.input.on('pointerdown', (pointer:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
       if(!gameObjects.includes(hintButton) && this._hintAnimationQueue.isProcessing)
       {
         this._hintAnimationQueue.cancel();
       }
     });
 
-    gameObjectEventEmitter.on("CARD_POINTEROVER", this.onCardPointerOver.bind(this));
-    gameObjectEventEmitter.on("CARD_POINTEROUT", this.onCardPointerOut.bind(this));
-    gameObjectEventEmitter.on("CARD_POINTERDOWN", this.onCardPointerDown.bind(this));
-    gameObjectEventEmitter.on("CARD_DRAGSTART", this.onCardDragStart.bind(this));
-    gameObjectEventEmitter.on("CARD_DRAG", this.onCardDrag.bind(this));
-    gameObjectEventEmitter.on("CARD_DROP", this.onCardDrop.bind(this));
-    gameObjectEventEmitter.on("CARD_DRAGEND", this.onCardDragEnd.bind(this));
-    modelEventEmitter.on("MOVE_CARDS_BETWEEN_PILES", this.onMoveCardsBetweenPiles.bind(this));
-    modelEventEmitter.on("FLIP_OVER_CARD", this.onFlipOverCard.bind(this));
-
+    this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
     this._table.startGame();
+
+    const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    dKey.on('down', (event:KeyboardEvent) => {
+      this.scene.start('gameover');
+    });
   }
 
-  onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Phaser.Input.Pointer})
+  onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Pointer})
   {
     if (!this._cardAnimationQueue.isProcessing) {
       this.addHighlightToCardGameObject({cardGameObject});
@@ -251,7 +246,7 @@ export default class MainScene extends Phaser.Scene
     }
   }
 
-  onCardDrag ({pointer, cardGameObject}:{pointer:Phaser.Input.Pointer, cardGameObject:CardGameObject})
+  onCardDrag ({pointer, cardGameObject}:{pointer:Pointer, cardGameObject:CardGameObject})
   {
     if (!cardGameObject.isHighLighted) return;
 
@@ -267,7 +262,7 @@ export default class MainScene extends Phaser.Scene
     }
   }
 
-  onCardDrop ({zone, cardGameObject}:{zone:Phaser.GameObjects.Zone, cardGameObject:CardGameObject})
+  onCardDrop ({zone, cardGameObject}:{zone:Zone, cardGameObject:CardGameObject})
   {
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;

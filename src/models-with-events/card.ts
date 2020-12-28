@@ -1,12 +1,20 @@
-import {emitter} from './emitter';
 import {Card} from '../models/card';
+import {Emitter} from '../event-emitter';
+
+interface CardEvents {
+  FLIP_OVER_CARD: {
+    card: Card
+  }
+}
 
 export class CardWithEvent extends Card
 {
+  private _emitter: Emitter<CardEvents> = new Emitter<CardEvents>();
+
   faceUp ()
   {
     super.faceUp();
-    emitter.emit('FLIP_OVER_CARD', {
+    this._emitter.emit('FLIP_OVER_CARD', {
       card: this
     });
   }
@@ -14,7 +22,7 @@ export class CardWithEvent extends Card
   faceDown ()
   {
     super.faceDown();
-    emitter.emit('FLIP_OVER_CARD', {
+    this._emitter.emit('FLIP_OVER_CARD', {
       card: this
     });
   }
@@ -22,8 +30,13 @@ export class CardWithEvent extends Card
   flipOver ()
   {
     super.flipOver();
-    emitter.emit('FLIP_OVER_CARD', {
+    this._emitter.emit('FLIP_OVER_CARD', {
       card: this
     });
+  }
+
+  onFlipOver (callback:({card}:{card:Card}) => void)
+  {
+    this._emitter.on('FLIP_OVER_CARD', callback);
   }
 }

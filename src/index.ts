@@ -13,7 +13,7 @@ const config = {
   type: Phaser.AUTO,
   // parent: "game",
   scene: [BootScene, MainScene, GameOverScene],
-  backgroundColor: "#ededed",
+  backgroundColor: "#73ba2c",
   // render: { pixelArt: false, antialias: true }
   // physics: {
   //   default: 'arcade',
