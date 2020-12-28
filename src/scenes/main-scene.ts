@@ -52,7 +52,7 @@ export default class MainScene extends Phaser.Scene
 
   create ()
   {
-    console.log(this.sys.game.canvas.width);
+    // console.log(this.sys.game.canvas.width);
 
     this.__table = new Table({
       numberOfTableauPiles: 4,
