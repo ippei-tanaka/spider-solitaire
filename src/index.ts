@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 // import HelloWorldScene from "./scenes/hello-world-scene";
 import MainScene from "./scenes/main-scene";
+import BootScene from "./scenes/boot-scene";
+import GameOverScene from "./scenes/gameover-scene";
 
 const config = {
   // title: "Game Of Life",
@@ -10,7 +12,7 @@ const config = {
   height: 800,
   type: Phaser.AUTO,
   // parent: "game",
-  scene: [MainScene],
+  scene: [BootScene, MainScene, GameOverScene],
   backgroundColor: "#ededed",
   // render: { pixelArt: false, antialias: true }
   // physics: {

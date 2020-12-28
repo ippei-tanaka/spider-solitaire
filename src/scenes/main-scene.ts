@@ -17,8 +17,8 @@ export default class MainScene extends Phaser.Scene
 {
   private __table:Table | undefined;
   private __tableGameObject:TableGameObject | undefined;
-  private _cardAnimationQueue:JobQueue<void> = new JobQueue<void>();
-  private _hintAnimationQueue:JobQueue<void> = new JobQueue<void>();
+  private __cardAnimationQueue:JobQueue<void> | undefined;
+  private __hintAnimationQueue:JobQueue<void> | undefined;
   // private _dragPileAnimationQueue:PromiseQueue<void> = new PromiseQueue<void>();
 
   constructor () {
@@ -39,14 +39,41 @@ export default class MainScene extends Phaser.Scene
     return this.__tableGameObject;
   }
 
-  async create ()
+  private get _cardAnimationQueue () {
+    if (!this.__cardAnimationQueue) {
+      throw new Error('cardAnimationQueue is not ready.');
+    }
+    return this.__cardAnimationQueue;
+  }
+
+  private get _hintAnimationQueue () {
+    if (!this.__hintAnimationQueue) {
+      throw new Error('hintAnimationQueue is not ready.');
+    }
+    return this.__hintAnimationQueue;
+  }
+
+  /*
+  init ()
   {
+    this.__table = undefined;
+    this.__tableGameObject = undefined;
+    this.__cardAnimationQueue = undefined;
+    this.__hintAnimationQueue = undefined;
+    console.log('init', this.__table);
+  }
+  */
+
+  create ()
+  {
+    // console.log('create', this.__table);
+    // console.log(this.__hintAnimationQueue);
     this.__table = new Table({
-      numberOfTableauPiles: 10,
-      numberOfDrawPiles: 5,
+      numberOfTableauPiles: 4,
+      numberOfDrawPiles: 1,
       cards: createCards({
-        numberOfDecksUsed: 4,
-        numberOfSuits: 2
+        numberOfDecksUsed: 1,
+        numberOfSuits: 1
       })
     });
 
@@ -69,6 +96,9 @@ export default class MainScene extends Phaser.Scene
     });
 
     this.children.add(this._tableGameObject);
+
+    this.__cardAnimationQueue = new JobQueue<void>();
+    this.__hintAnimationQueue = new JobQueue<void>();
 
     const undoButton = new Button({
       scene: this,
@@ -309,7 +339,8 @@ export default class MainScene extends Phaser.Scene
 
     if (this._table.isClear) {
       this._cardAnimationQueue.add(async () => {
-        alert("You beat the game!!!");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        this.scene.start('gameover');
       });
     }
   }
