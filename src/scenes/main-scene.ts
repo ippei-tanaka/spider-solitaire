@@ -65,7 +65,7 @@ export default class MainScene extends Phaser.Scene
         return card;
       })
     });
-
+console.log(1231);
     this.__tableGameObject = new TableGameObject({
       scene: this,
       deckPileId: this._table.deckPile.id,
@@ -149,10 +149,10 @@ export default class MainScene extends Phaser.Scene
     this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
     this._table.startGame();
 
-    // const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-    // dKey.on('down', (event:KeyboardEvent) => {
-    //   this.scene.start('gameover');
-    // });
+    const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    dKey.on('down', (event:KeyboardEvent) => {
+      this.scene.start('gameover');
+    });
   }
 
   onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Pointer})
@@ -200,7 +200,7 @@ export default class MainScene extends Phaser.Scene
 
   onCardPointerDown ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    if (!cardGameObject.isHighLighted) return;
+    // if (!cardGameObject.isHighLighted) return;
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     if (this._table.frontDrawPile)
     {
@@ -214,7 +214,7 @@ export default class MainScene extends Phaser.Scene
 
   onCardDragStart ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    if (!cardGameObject.isHighLighted) return;
+    // if (!cardGameObject.isHighLighted) return;
 
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
@@ -248,7 +248,7 @@ export default class MainScene extends Phaser.Scene
 
   onCardDrag ({pointer, cardGameObject}:{pointer:Pointer, cardGameObject:CardGameObject})
   {
-    if (!cardGameObject.isHighLighted) return;
+    // if (!cardGameObject.isHighLighted) return;
 
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
 

@@ -33,17 +33,15 @@ module.exports = {
       : path.resolve(__dirname, 'docs'),
   },
 
-  devServer: {
-    contentBase: NODE_MODE === "development"
-      ? path.resolve(__dirname, 'dist') 
-      : path.resolve(__dirname, 'docs'),
-    writeToDisk: true
+  devServer: NODE_MODE === "development" ? {
+    contentBase: path.resolve(__dirname, 'dist'),
+    writeToDisk: true,
     // compress: true,
     // publicPath: "/dist/",
-    // host: "127.0.0.1",
+    host: "192.168.8.150",//"127.0.0.1",
     // port: 8080,
     // open: true
-  },
+  } : undefined,
 
   plugins: [
     new CopyPlugin({
