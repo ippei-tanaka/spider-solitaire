@@ -1,8 +1,10 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
+const NODE_MODE = process.env.NODE_MODE === "development" ? "development" : "production";
+
 module.exports = {
-  mode: 'development',
+  mode: NODE_MODE,
 
   entry: {
     app: './src/index.ts'
@@ -26,11 +28,15 @@ module.exports = {
 
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'docs'),
+    path: NODE_MODE === "development"
+      ? path.resolve(__dirname, 'dist')
+      : path.resolve(__dirname, 'docs'),
   },
 
   devServer: {
-    contentBase: path.join(__dirname, 'docs'),
+    contentBase: NODE_MODE === "development"
+      ? path.resolve(__dirname, 'dist') 
+      : path.resolve(__dirname, 'docs'),
     writeToDisk: true
     // compress: true,
     // publicPath: "/dist/",
