@@ -30,6 +30,7 @@ export const createCards = ({
   return deckCards;
 }
 
+/*
 export const randomizeArray = <T>({array}:{array:T[]}) => {
   const _arr = [...array];
   for (let i = _arr.length - 1; i > 0; i--)
@@ -39,3 +40,4 @@ export const randomizeArray = <T>({array}:{array:T[]}) => {
   }
   return _arr;
 }
+*/

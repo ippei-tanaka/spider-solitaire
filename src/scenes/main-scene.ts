@@ -11,13 +11,18 @@ import {Pile} from '../models/pile';
 import {TableWithEvent as Table} from '../models-with-events/table';
 // import {Table} from '../models/table';
 import {createCardsWithEvents as createCards} from '../models-with-events/create-cards';
-import {randomizeArray} from '../models/create-cards';
+// import {randomizeArray} from '../models/create-cards';
 // import {emitter as modelEventEmitter} from '../models-with-events/emitter';
 import {JobQueue} from '../job-queue';
 // import {debounce} from 'underscore';
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
+type RandomDataGenerator = Phaser.Math.RandomDataGenerator;
+const RND = new Phaser.Math.RandomDataGenerator();
+console.log(RND.uuid().split('-'));
+RND.init(RND.uuid().split('-'));
+
 
 export default class MainScene extends Phaser.Scene
 {
@@ -25,6 +30,7 @@ export default class MainScene extends Phaser.Scene
   private __tableGameObject:TableGameObject | undefined;
   private __cardAnimationQueue:JobQueue<void> | undefined;
   private __hintAnimationQueue:JobQueue<void> | undefined;
+  private _RND: RandomDataGenerator = new Phaser.Math.RandomDataGenerator();
 
   constructor () {
     super('main');
@@ -52,19 +58,32 @@ export default class MainScene extends Phaser.Scene
 
   create ()
   {
-    // console.log(this.sys.game.canvas.width);
+    const seed = window.localStorage.getItem('seed');
+    if (seed)
+    {
+      this._RND.init(seed.split('-'));
+    }
+
 
     this.__table = new Table({
       numberOfTableauPiles: 10,
       numberOfDrawPiles: 5,
-      cards: createCards({
+      cards: RND.shuffle(createCards({
         numberOfDecksUsed: 8,
         numberOfSuits: 1
       }).map(card => {
         card.onFlipOver(this.onFlipOverCard.bind(this))
         return card;
-      })
+      }))
     });
+
+    // this._table.actionHistory.onAdd(action => {
+    //   console.log(action);
+    // });
+    //
+    // this._table.actionHistory.onRemove(action => {
+    //   console.log(action);
+    // });
 
     this.__tableGameObject = new TableGameObject({
       scene: this,

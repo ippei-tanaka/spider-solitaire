@@ -92,6 +92,11 @@ export class Table
     return !this._tableauPiles.find(p => p.cards.length > 0);
   }
 
+  get actionHistory ()
+  {
+    return this._actionHistory;
+  }
+
   getPossibleMovesBetweenTableauPiles ()
   {
     let moves:{size:number, from: Pile, to: Pile}[] = [];

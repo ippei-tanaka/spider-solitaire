@@ -7,7 +7,7 @@ export default class BootScene extends Phaser.Scene
     super('boot');
   }
 
-  init ()
+  create ()
   {
     const bg = new Phaser.GameObjects.Rectangle(this, 500, 400, 1000, 800, 0x555555, 1);
     this.children.add(bg);
@@ -21,10 +21,4 @@ export default class BootScene extends Phaser.Scene
     startButton.on('pointerdown', () => this.scene.start('main'));
     this.children.add(startButton);
   }
-
-  create ()
-  {
-
-  }
-
 }
