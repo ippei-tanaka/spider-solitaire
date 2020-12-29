@@ -1,12 +1,16 @@
 import {Card} from './card';
 import {Pile} from './pile';
-// import {TableSettings, TableSettingConfig} from './table-settings';
 import {
   FACE_UP_CARD,
   MOVE_CARD,
   PAUSE,
   UndoableActionHistory
-} from './undoable-actions';
+} from './undoable-action-history';
+import {
+  SimplifiedUndoableAction,
+  simplify,
+  recover
+} from './undoable-action-history/simplified-action'
 
 export type TableSettings = {
   numberOfTableauPiles: number,
@@ -24,6 +28,7 @@ export class Table
   private _discardPiles:Pile[];
   private _piles:Pile[];
   private _actionHistory:UndoableActionHistory;
+  private _simplifiedActions:SimplifiedUndoableAction[];
 
   constructor (settings: TableSettings)
   {
@@ -35,6 +40,14 @@ export class Table
     this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({label: `disc${i}`, cards: []}));
     this._piles = [this._deckPile, ...this._drawPiles, ...this.tableauPiles, ...this._discardPiles];
     this._actionHistory = new UndoableActionHistory();
+    this._simplifiedActions = [];
+
+    this._actionHistory.onAdd(action => {
+      this._simplifiedActions = [...this._simplifiedActions, simplify(action)];
+    });
+    this._actionHistory.onRemove(() => {
+      this._simplifiedActions = this._simplifiedActions.slice(0, -1);
+    });
   }
 
   get cards ()
@@ -92,38 +105,9 @@ export class Table
     return !this._tableauPiles.find(p => p.cards.length > 0);
   }
 
-  get actionHistory ()
+  get steps ()
   {
-    return this._actionHistory;
-  }
-
-  getPossibleMovesBetweenTableauPiles ()
-  {
-    let moves:{size:number, from: Pile, to: Pile}[] = [];
-
-    for (let from of this._tableauPiles)
-    {
-      const drawableCards = from.getDescendingInSuitFrontCards();
-      if (drawableCards.length === 0) continue;
-
-      for (let to of this._tableauPiles)
-      {
-        if (to === from) continue;
-
-        for (let size = drawableCards.length; size > 0; size--)
-        {
-          if (to.frontCard && !Pile.checkIfCardsAreDescending({
-            cards: [to.frontCard, ...drawableCards.slice(-size)],
-            inSuit: false,
-            faceUp: true
-          })) continue;
-
-          moves = [...moves, {from, to, size}];
-        }
-      }
-    }
-
-    return moves;
+    return this._simplifiedActions;
   }
 
   protected _moveCardBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
@@ -164,8 +148,6 @@ export class Table
 
   private _dealCardsFromDeckToDrawPiles ()
   {
-    // const numberOfDrawCards = this._settings.numberOfTableauPiles * this._settings.numberOfDrawPiles;
-
     for (let index = 0; index < this._settings.numberOfDrawPiles; index++)
     {
       const from = this._deckPile;
@@ -321,10 +303,6 @@ export class Table
 
   undo ()
   {
-    // console.log(this._actionHistory.actions.map((a, index, _) => {
-    //   return (a.type);
-    // }));
-
     loopDeletePauses: for (;;)
     {
       const action = this._actionHistory.latest;
@@ -367,6 +345,54 @@ export class Table
         default:
           break;
       };
+    }
+  }
+
+  getPossibleMovesBetweenTableauPiles ()
+  {
+    let moves:{size:number, from: Pile, to: Pile}[] = [];
+
+    for (let from of this._tableauPiles)
+    {
+      const drawableCards = from.getDescendingInSuitFrontCards();
+      if (drawableCards.length === 0) continue;
+
+      for (let to of this._tableauPiles)
+      {
+        if (to === from) continue;
+
+        for (let size = drawableCards.length; size > 0; size--)
+        {
+          if (to.frontCard && !Pile.checkIfCardsAreDescending({
+            cards: [to.frontCard, ...drawableCards.slice(-size)],
+            inSuit: false,
+            faceUp: true
+          })) continue;
+
+          moves = [...moves, {from, to, size}];
+        }
+      }
+    }
+
+    return moves;
+  }
+
+  // reproduce (simplifiedUndoableActions:SimplifiedUndoableAction[])
+  reproduce ()
+  {
+    // console.log(Phaser.Math.RND.integer());
+    // for (let i = 0; i < simplifiedUndoableActions.length; i++)
+    {
+      // const undoableAction = recover({
+      //   simplifiedUndoableAction: simplifiedUndoableActions[i],
+      //   cardFinder: (id) => {this._cards.},
+      //   pileFinder: () => {}
+      // });
+      // switch (undoableAction.type)
+      // {
+      //   case FACE_UP_CARD:
+      //
+      // }
     }
   }
 

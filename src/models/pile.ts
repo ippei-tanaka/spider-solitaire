@@ -3,19 +3,21 @@ import {nanoid} from 'nanoid';
 
 type PileArgs = {
   cards?: Card[],
-  label?: string
+  label?: string,
+  id?:string
 }
 
 export class Pile
 {
   protected _cards:Card[];
   protected _label:string;
-  private _id:string = nanoid();
+  private _id:string;
 
   constructor (args:PileArgs = {})
   {
     this._cards = args.cards || [];
     this._label = args.label || '';
+    this._id = args.id || nanoid();
   }
 
   get id () {

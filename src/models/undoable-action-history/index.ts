@@ -1,6 +1,6 @@
-import {Card} from './card';
-import {Pile} from './pile';
-import {Emitter} from '../event-emitter';
+import {Card} from '../card';
+import {Pile} from '../pile';
+import {Emitter} from '../../event-emitter';
 
 export const FACE_UP_CARD = 'FACE_UP_CARD';
 export const MOVE_CARD = 'MOVE_CARD';

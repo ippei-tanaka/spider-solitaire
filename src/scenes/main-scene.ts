@@ -20,8 +20,9 @@ type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
 type RandomDataGenerator = Phaser.Math.RandomDataGenerator;
 const RND = new Phaser.Math.RandomDataGenerator();
-console.log(RND.uuid().split('-'));
-RND.init(RND.uuid().split('-'));
+// console.log(RND.uuid().split('-'));
+// RND.init(RND.uuid().split('-'));
+
 
 
 export default class MainScene extends Phaser.Scene
@@ -34,6 +35,7 @@ export default class MainScene extends Phaser.Scene
 
   constructor () {
     super('main');
+    console.log(Phaser.Math.RND.uuid());
   }
 
   private get _table () {
@@ -58,12 +60,17 @@ export default class MainScene extends Phaser.Scene
 
   create ()
   {
+    console.log(Phaser.Math.RND.uuid());
+    console.log(Phaser.Math.RND.uuid());
+    console.log(Phaser.Math.RND.uuid());
+    console.log(Phaser.Math.RND.uuid());
+    console.log(Phaser.Math.RND.uuid());
+
     const seed = window.localStorage.getItem('seed');
     if (seed)
     {
       this._RND.init(seed.split('-'));
     }
-
 
     this.__table = new Table({
       numberOfTableauPiles: 10,

@@ -25,17 +25,25 @@ const getRankText = (rank:number) =>
   }
 }
 
+type CardArgs = {
+  suit:Suit,
+  rank:number,
+  isFaceUp?:boolean,
+  id?:string
+}
+
 export class Card
 {
   private _suit: Suit;
   private _rank: number;
   private _isFaceUp: boolean;
-  private _id:string = nanoid();
+  private _id:string;
 
-  constructor ({suit, rank, isFaceUp}:{suit:Suit, rank:number, isFaceUp?:boolean})
+  constructor ({suit, rank, isFaceUp, id}:CardArgs)
   {
     this._suit = suit;
     this._isFaceUp = isFaceUp || false;
+    this._id = id || nanoid();
 
     if (1 <= rank && rank <= 13) {
       this._rank = rank;

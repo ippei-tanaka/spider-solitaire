@@ -1,13 +1,22 @@
 import {Card, Suit} from './card';
 
+type Mapping = ({rank, suit}:{rank:number, suit:Suit}) => Card;
+
+type CreateCardsArgs = {
+  numberOfDecksUsed:number,
+  numberOfSuits:number,
+  mapping?: Mapping
+};
+
+const defaultMapping:Mapping = ({rank, suit}) => new Card({suit, rank, isFaceUp: false});
+
 export const createCards = ({
   numberOfDecksUsed,
-  numberOfSuits
-}:{
-  numberOfDecksUsed:number,
-  numberOfSuits:number
-}) => {
+  numberOfSuits,
+  mapping
+}:CreateCardsArgs) => {
   const deckCards:Card[] = [];
+  const _mapping = mapping || defaultMapping;
 
   for (let i = 0; i < numberOfDecksUsed; i++)
   {
@@ -16,28 +25,16 @@ export const createCards = ({
       switch (numberOfSuits)
       {
         case 4:
-          deckCards.push(new Card({suit:Suit.Diamond, rank, isFaceUp: false}));
+          deckCards.push(_mapping({rank, suit: Suit.Diamond}));
         case 3:
-          deckCards.push(new Card({suit:Suit.Club, rank, isFaceUp: false}));
+          deckCards.push(_mapping({rank, suit: Suit.Club}));
         case 2:
-          deckCards.push(new Card({suit:Suit.Heart, rank, isFaceUp: false}));
+          deckCards.push(_mapping({rank, suit: Suit.Heart}));
         case 1:
-          deckCards.push(new Card({suit:Suit.Spade, rank, isFaceUp: false}));
+          deckCards.push(_mapping({rank, suit: Suit.Spade}));
       }
     }
   }
 
   return deckCards;
 }
-
-/*
-export const randomizeArray = <T>({array}:{array:T[]}) => {
-  const _arr = [...array];
-  for (let i = _arr.length - 1; i > 0; i--)
-  {
-      const j = Math.floor(Math.random() * (i + 1));
-      [_arr[i], _arr[j]] = [_arr[j], _arr[i]];
-  }
-  return _arr;
-}
-*/
