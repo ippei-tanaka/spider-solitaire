@@ -1,5 +1,5 @@
-// import {eventHub} from '../event-hub';
 import {nanoid} from 'nanoid';
+import {Emitter} from '../event-emitter';
 
 export enum Suit {
   Spade = '♠',
@@ -32,12 +32,19 @@ type CardArgs = {
   id?:string
 }
 
+type CardEvents = {
+  FLIP_OVER_CARD: {
+    card: Card
+  }
+}
+
 export class Card
 {
   private _suit: Suit;
   private _rank: number;
   private _isFaceUp: boolean;
   private _id:string;
+  private _emitter: Emitter<CardEvents> = new Emitter<CardEvents>();
 
   constructor ({suit, rank, isFaceUp, id}:CardArgs)
   {
@@ -79,16 +86,30 @@ export class Card
   faceUp ()
   {
     this._isFaceUp = true;
+    this._emitter.emit('FLIP_OVER_CARD', {
+      card: this
+    });
   }
 
   faceDown ()
   {
     this._isFaceUp = false;
+    this._emitter.emit('FLIP_OVER_CARD', {
+      card: this
+    });
   }
 
   flipOver ()
   {
     this._isFaceUp = !this._isFaceUp;
+    this._emitter.emit('FLIP_OVER_CARD', {
+      card: this
+    });
+  }
+
+  onFlipOver (callback:({card}:{card:Card}) => void)
+  {
+    this._emitter.on('FLIP_OVER_CARD', callback);
   }
 
   toString ()

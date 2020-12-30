@@ -11,11 +11,21 @@ import {
   simplify,
   recover
 } from './undoable-action-history/simplified-action'
+import {Emitter} from '../event-emitter';
 
 export type TableSettings = {
   numberOfTableauPiles: number,
   numberOfDrawPiles: number,
   cards: Card[]
+}
+
+type TableEvents = {
+  MOVE_CARDS_BETWEEN_PILES: {
+    from:Pile,
+    to:Pile,
+    size:number
+  },
+  ACTION_HAPPEN : undefined
 }
 
 export class Table
@@ -27,8 +37,9 @@ export class Table
   private _tableauPiles:Pile[];
   private _discardPiles:Pile[];
   private _piles:Pile[];
-  protected _actionHistory:UndoableActionHistory;
+  private _actionHistory:UndoableActionHistory;
   private _simplifiedUndoableActions:SimplifiedUndoableAction[];
+  private _emitter: Emitter<TableEvents> = new Emitter<TableEvents>();
 
   constructor (settings: TableSettings)
   {
@@ -44,9 +55,11 @@ export class Table
 
     this._actionHistory.onAdd(action => {
       this._simplifiedUndoableActions = [...this._simplifiedUndoableActions, simplify(action)];
+      this._emitter.emit('ACTION_HAPPEN', undefined);
     });
     this._actionHistory.onRemove(() => {
       this._simplifiedUndoableActions = this._simplifiedUndoableActions.slice(0, -1);
+      this._emitter.emit('ACTION_HAPPEN', undefined);
     });
   }
 
@@ -125,7 +138,7 @@ export class Table
     return this._simplifiedUndoableActions;
   }
 
-  protected _moveCardBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
+  private _moveCardBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
   {
     if (!this._piles.find(p => p === from))
     {
@@ -144,6 +157,8 @@ export class Table
 
     const cards = from.drawCards({size});
     to.placeCards({cards});
+
+    this._emitter.emit('MOVE_CARDS_BETWEEN_PILES', {from, to, size});
   }
 
   private _dealCardsFromDeckToTableauPiles ()
@@ -429,6 +444,17 @@ export class Table
           break;
       }
     }
+  }
+
+  onMoveCardsBetweenPiles (callback:
+    ({from, to, size}:{from:Pile, to:Pile, size:number}) => void)
+  {
+    this._emitter.on('MOVE_CARDS_BETWEEN_PILES', callback);
+  }
+
+  onActionHappen (callback: () => void)
+  {
+    this._emitter.on('ACTION_HAPPEN', callback);
   }
 
   toString()
