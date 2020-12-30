@@ -183,9 +183,23 @@ export default class MainScene extends Phaser.Scene
       this._table.reproduce(JSON.parse(actions));
     }
 
-    const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-    dKey.on('down', (_:KeyboardEvent) => {
-      this.endGame();
+    // const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    // dKey.on('up', (_:KeyboardEvent) => {
+    //   this.clearGame();
+    // });
+
+    const menuButton = new Button({
+      scene: this,
+      x: 337,
+      y: 520,
+      label: 'Menu(H)'
+    });
+    menuButton.on('pointerdown', () => this.showMenu());
+    this.children.add(menuButton);
+
+    const mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+    mKey.on('up', (_:KeyboardEvent) => {
+      this.showMenu();
     });
   }
 
@@ -369,7 +383,7 @@ export default class MainScene extends Phaser.Scene
     if (this._table.isClear) {
       this._cardAnimationQueue.add(async () => {
         await new Promise(resolve => setTimeout(resolve, 100));
-        this.endGame();
+        this.clearGame();
       });
     }
   }
@@ -442,12 +456,18 @@ export default class MainScene extends Phaser.Scene
     }
   }
 
-  endGame ()
+  clearGame ()
   {
     this.scene.pause();
     localStorage.removeItem('seed');
     localStorage.removeItem('actions');
-    this.scene.launch('gameover');
+    this.scene.launch('gameclear');
+  }
+
+  showMenu ()
+  {
+    this.scene.pause();
+    this.scene.launch('menu');
   }
 
 }

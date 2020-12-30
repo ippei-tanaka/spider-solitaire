@@ -4,10 +4,10 @@ import {Button} from '../game-objects/button';
 const Rectangle = Phaser.GameObjects.Rectangle;
 const Text = Phaser.GameObjects.Text;
 
-export default class GameOverScene extends Phaser.Scene
+export default class GameClearScene extends Phaser.Scene
 {
   constructor () {
-    super('gameover');
+    super('gameclear');
   }
 
   create ()
@@ -29,10 +29,10 @@ export default class GameOverScene extends Phaser.Scene
       this,
       0,
       0,
-      'No More Moves!',
+      'Congratulations!',
       {
         fontSize: "50px",
-        color: '#000000',
+        color: '#ff00dd',
         fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif'
       }
     );
@@ -46,7 +46,6 @@ export default class GameOverScene extends Phaser.Scene
       y: 0,
       label: 'Start Over'
     });
-    console.log(startButton.width);
     startButton.x = stageWidth / 2;
     startButton.y = stageHeight / 2 + 50;
     startButton.on('pointerdown', () => {
