@@ -124,11 +124,14 @@ export class PileGameObject extends Phaser.GameObjects.Container
 
   getNewFrontCardGameObjectPosition ()
   {
-    return {
+    const positions = this._getAdjustedCardGameObjectPositions();
+    const frontCard = positions[positions.length - 1];
+    return frontCard ? {
       x: 0,
-      y: !this._isSpread ? 0 : this._cardGameObjects.reduce((prev, cardGameObject) => {
-        return prev + (cardGameObject.isFaceUp ? this._faceUpCardGap : this._faceDownCardGap);
-      }, 0)
+      y: frontCard.y + this._faceUpCardGap
+    } : {
+      x: 0,
+      y: 0
     }
   }
 
