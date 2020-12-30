@@ -28,7 +28,7 @@ export class Table
   private _discardPiles:Pile[];
   private _piles:Pile[];
   private _actionHistory:UndoableActionHistory;
-  private _simplifiedActions:SimplifiedUndoableAction[];
+  private _simplifiedUndoableActions:SimplifiedUndoableAction[];
 
   constructor (settings: TableSettings)
   {
@@ -40,13 +40,13 @@ export class Table
     this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({label: `disc${i}`, cards: []}));
     this._piles = [this._deckPile, ...this._drawPiles, ...this.tableauPiles, ...this._discardPiles];
     this._actionHistory = new UndoableActionHistory();
-    this._simplifiedActions = [];
+    this._simplifiedUndoableActions = [];
 
     this._actionHistory.onAdd(action => {
-      this._simplifiedActions = [...this._simplifiedActions, simplify(action)];
+      this._simplifiedUndoableActions = [...this._simplifiedUndoableActions, simplify(action)];
     });
     this._actionHistory.onRemove(() => {
-      this._simplifiedActions = this._simplifiedActions.slice(0, -1);
+      this._simplifiedUndoableActions = this._simplifiedUndoableActions.slice(0, -1);
     });
   }
 
@@ -60,7 +60,7 @@ export class Table
     return [...this._piles];
   }
 
-  getPileBy (predicate:(p:Pile) => any)
+  getPileBy (predicate:(p:Pile) => boolean)
   {
     const pile = this._piles.find(predicate);
     if (!pile)
@@ -70,14 +70,29 @@ export class Table
     return pile;
   }
 
-  getPileById (id:string)
+  getPileByName (label:string)
   {
-    return this.getPileBy(p => p.id === id);
+    return this.getPileBy(p => p.name === label);
   }
 
   getPileByCardId (id:string)
   {
-    return this.getPileBy(p => p.cards.find(c => c.id === id));
+    return this.getPileBy(p => !!p.cards.find(c => c.id === id));
+  }
+
+  getCardBy (predicate:(c:Card) => boolean)
+  {
+    const card = this._cards.find(predicate);
+    if (!card)
+    {
+      throw new Error("The card doesn't exist.");
+    }
+    return card;
+  }
+
+  getCardById (id:string)
+  {
+    return this.getCardBy(c => c.id === id);
   }
 
   get deckPile ()
@@ -105,9 +120,9 @@ export class Table
     return !this._tableauPiles.find(p => p.cards.length > 0);
   }
 
-  get steps ()
+  get simplifiedUndoableActions ()
   {
-    return this._simplifiedActions;
+    return this._simplifiedUndoableActions;
   }
 
   protected _moveCardBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
@@ -124,7 +139,7 @@ export class Table
 
     if (from.getFrontCards({size}).length !== size)
     {
-      throw new Error(`The pile "${from.id}" doesn't have ${size} cards to draw.`);
+      throw new Error(`The pile "${from.name}" doesn't have ${size} cards to draw.`);
     }
 
     const cards = from.drawCards({size});
@@ -194,7 +209,7 @@ export class Table
     const cards = from.getFrontCards({size});
     if (cards.length !== size)
     {
-      throw new Error(`The pile "${from.id}" doesn't have ${size} cards to draw.`);
+      throw new Error(`The pile "${from.name}" doesn't have ${size} cards to draw.`);
     }
 
     if (to.frontCard && !Pile.checkIfCardsAreDescending({
@@ -377,27 +392,47 @@ export class Table
     return moves;
   }
 
-  // reproduce (simplifiedUndoableActions:SimplifiedUndoableAction[])
-  reproduce ()
+  reproduce (simplifiedUndoableActions:SimplifiedUndoableAction[])
   {
-    // console.log(Phaser.Math.RND.integer());
-    // for (let i = 0; i < simplifiedUndoableActions.length; i++)
+    for (let i = 0; i < simplifiedUndoableActions.length; i++)
     {
-      // const undoableAction = recover({
-      //   simplifiedUndoableAction: simplifiedUndoableActions[i],
-      //   cardFinder: (id) => {this._cards.},
-      //   pileFinder: () => {}
-      // });
-      // switch (undoableAction.type)
-      // {
-      //   case FACE_UP_CARD:
-      //
-      // }
+      const action = recover({
+        simplifiedUndoableAction: simplifiedUndoableActions[i],
+        cardFinder: (id) => this.getCardById(id),
+        pileFinder: (name) => this.getPileByName(name)
+      });
+
+      switch (action.type)
+      {
+        case FACE_UP_CARD:
+          action.card.faceUp();
+          this._actionHistory.add({
+            card: action.card,
+            type: FACE_UP_CARD
+          });
+          break;
+        case MOVE_CARD:
+          this._moveCardBetweenPiles({
+            from: action.from,
+            to: action.to,
+            size: action.size
+          });
+          this._actionHistory.add({
+            from: action.from,
+            to: action.to,
+            size: action.size,
+            type: MOVE_CARD
+          });
+          break;
+        case PAUSE:
+          this._actionHistory.add({type: PAUSE});
+          break;
+      }
     }
   }
 
   toString()
   {
-    return this._piles.map(p => p.label + " " + p.toString()).join('\n');
+    return this._piles.map(p => p.name + " " + p.toString()).join('\n');
   }
 }

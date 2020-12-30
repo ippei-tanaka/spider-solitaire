@@ -12,7 +12,6 @@ const config = {
     width: 1000,
     height: 563
   },
-  seed: ["1","2",'@'],
   scene: [MainScene,  BootScene, GameOverScene],
   backgroundColor: "#73ba2c"
 };

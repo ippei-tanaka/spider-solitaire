@@ -503,21 +503,21 @@ test('Table possible moves', () => {
 });
 
 
-/*
 test('Table save steps and recover it', () => {
+
+  const cards = Array.from({length: 1 * 13 * 4}).map((_, index) => new Card({
+    suit: Suit.Club,
+    rank: 13 - index % 13,
+    isFaceUp: false
+  }));
+
   const table = new Table({
     numberOfTableauPiles: 4,
     numberOfDrawPiles: 2,
-    cards: Array.from({length: 1 * 13 * 4}).map((_, index) => new Card({
-      suit: Suit.Club,
-      rank: 13 - index % 13,
-      isFaceUp: false
-    }))
+    cards: [...cards]
   });
 
   table.startGame();
-
-  console.log(table.toString());
 
   table.moveCardBetweenTableauPiles({
     from: table.tableauPiles[0],
@@ -550,8 +550,24 @@ test('Table save steps and recover it', () => {
   expect(table.drawPiles[0].cards.length).toBe(4);
   expect(table.drawPiles[1].cards.length).toBe(0);
 
-  // console.log(table.steps);
-  table.reproduce();
+  const table2 = new Table({
+    numberOfTableauPiles: 4,
+    numberOfDrawPiles: 2,
+    cards: [...cards]
+  });
 
+  table2.startGame();
+
+  table2.reproduce(table.simplifiedUndoableActions);
+
+  expect(table2.tableauPiles[0].frontCard?.rank).toBe(10);
+  expect(table2.tableauPiles[0].cards.length).toBe(11);
+  expect(table2.tableauPiles[1].frontCard?.rank).toBe(11);
+  expect(table2.tableauPiles[1].cards.length).toBe(11);
+  expect(table2.tableauPiles[2].frontCard?.rank).toBe(2);
+  expect(table2.tableauPiles[2].cards.length).toBe(13);
+  expect(table2.tableauPiles[3].frontCard?.rank).toBe(12);
+  expect(table2.tableauPiles[3].cards.length).toBe(13);
+  expect(table2.drawPiles[0].cards.length).toBe(4);
+  expect(table2.drawPiles[1].cards.length).toBe(0);
 });
-*/

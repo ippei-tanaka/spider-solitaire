@@ -19,7 +19,7 @@ import {JobQueue} from '../job-queue';
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
 type RandomDataGenerator = Phaser.Math.RandomDataGenerator;
-const RND = new Phaser.Math.RandomDataGenerator();
+// const RND = new Phaser.Math.RandomDataGenerator();
 // console.log(RND.uuid().split('-'));
 // RND.init(RND.uuid().split('-'));
 
@@ -35,7 +35,7 @@ export default class MainScene extends Phaser.Scene
 
   constructor () {
     super('main');
-    console.log(Phaser.Math.RND.uuid());
+    // console.log(Phaser.Math.RND.uuid());
   }
 
   private get _table () {
@@ -60,46 +60,38 @@ export default class MainScene extends Phaser.Scene
 
   create ()
   {
-    console.log(Phaser.Math.RND.uuid());
-    console.log(Phaser.Math.RND.uuid());
-    console.log(Phaser.Math.RND.uuid());
-    console.log(Phaser.Math.RND.uuid());
-    console.log(Phaser.Math.RND.uuid());
+    // console.log(Phaser.Math.RND.state());
+    // console.log(Phaser.Math.RND.uuid());
+    // console.log(Phaser.Math.RND.uuid());
+    // console.log(Phaser.Math.RND.uuid());
+    // console.log(Phaser.Math.RND.uuid());
 
-    const seed = window.localStorage.getItem('seed');
-    if (seed)
-    {
-      this._RND.init(seed.split('-'));
-    }
+    // const seed = window.localStorage.getItem('seed');
+    // if (seed)
+    // {
+    //   this._RND.init(seed.split('-'));
+    // }
 
     this.__table = new Table({
       numberOfTableauPiles: 10,
       numberOfDrawPiles: 5,
-      cards: RND.shuffle(createCards({
+      cards: createCards({
         numberOfDecksUsed: 8,
         numberOfSuits: 1
       }).map(card => {
         card.onFlipOver(this.onFlipOverCard.bind(this))
         return card;
-      }))
+      })
     });
-
-    // this._table.actionHistory.onAdd(action => {
-    //   console.log(action);
-    // });
-    //
-    // this._table.actionHistory.onRemove(action => {
-    //   console.log(action);
-    // });
 
     this.__tableGameObject = new TableGameObject({
       scene: this,
-      deckPileId: this._table.deckPile.id,
-      drawPilesIds: this._table.drawPiles.map(p => p.id),
-      tableauPilesIds: this._table.tableauPiles.map(p => p.id),
-      discardPilesIds: this._table.discardPiles.map(p => p.id),
-      dragPileId: "drag-pile",
-      hintPileId: "hint-pile",
+      deckPileName: this._table.deckPile.name,
+      drawPilesNames: this._table.drawPiles.map(p => p.name),
+      tableauPilesNames: this._table.tableauPiles.map(p => p.name),
+      discardPilesNames: this._table.discardPiles.map(p => p.name),
+      dragPileName: "drag",
+      hintPileName: "hint",
       cardGameObjects: this._table.cards.map(card => {
         const cardGameObject = new CardGameObject({
           scene: this,
@@ -120,31 +112,12 @@ export default class MainScene extends Phaser.Scene
       })
     });
 
+    // console.log(this._tableGameObject);
+
     this.children.add(this._tableGameObject);
 
     this.__cardAnimationQueue = new JobQueue<void>();
     this.__hintAnimationQueue = new JobQueue<void>();
-
-    /*
-    const disableCardGameObject = () => {
-      this._tableGameObject.cardGameObjects.forEach(cardGameObject => {
-        cardGameObject.removeInteractive();
-      });
-    }
-
-    const enableCardGameObject = () => {
-      this._tableGameObject.cardGameObjects.forEach(cardGameObject => {
-        cardGameObject.setInteractive();
-      });
-    }
-
-    this._cardAnimationQueue.onQueueStart(() => disableCardGameObject());
-    this._cardAnimationQueue.onQueueEnd(() => enableCardGameObject());
-    this._cardAnimationQueue.onQueueCancel(() => enableCardGameObject());
-    this._hintAnimationQueue.onQueueStart(() => disableCardGameObject());
-    this._hintAnimationQueue.onQueueEnd(() => enableCardGameObject());
-    this._hintAnimationQueue.onQueueCancel(() => enableCardGameObject());
-    */
 
     const undoButton = new Button({
       scene: this,
@@ -162,7 +135,7 @@ export default class MainScene extends Phaser.Scene
     this._hintAnimationQueue.onQueueCancel(() => undoButton.enable());
 
     const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
-    uKey.on('down', (event:KeyboardEvent) => {
+    uKey.on('down', (_:KeyboardEvent) => {
       if (!undoButton.isDisabled) this._table.undo();
     });
 
@@ -182,11 +155,11 @@ export default class MainScene extends Phaser.Scene
     this._hintAnimationQueue.onQueueCancel(() => hintButton.enable());
 
     const hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-    hKey.on('down', (event:KeyboardEvent) => {
+    hKey.on('down', (_:KeyboardEvent) => {
       if (!hintButton.isDisabled) this.showHints();
     });
 
-    this.input.on('pointerdown', (pointer:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
+    this.input.on('pointerdown', (_:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
       if(!gameObjects.includes(hintButton) && this._hintAnimationQueue.isProcessing)
       {
         this._hintAnimationQueue.cancel();
@@ -197,7 +170,7 @@ export default class MainScene extends Phaser.Scene
     this._table.startGame();
 
     const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-    dKey.on('down', (event:KeyboardEvent) => {
+    dKey.on('down', (_:KeyboardEvent) => {
       this.scene.pause();
       this.scene.launch('gameover');
     });
@@ -224,7 +197,7 @@ export default class MainScene extends Phaser.Scene
       && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject))
     {
       const targetPile = this._table.getPileByCardId(cardGameObject.name);
-      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.id);
+      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.name);
       const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
       if (Pile.checkIfCardsAreDescending({cards: targetPile.cards.slice(-size), faceUp: true, inSuit: true}))
       {
@@ -233,7 +206,7 @@ export default class MainScene extends Phaser.Scene
     }
     else if (this._table.frontDrawPile)
     {
-      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.id);
+      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.name);
       if (targetPileGameObject === frontDrawPileGameObject)
       {
         cardGameObject.addHighlight();
@@ -252,7 +225,7 @@ export default class MainScene extends Phaser.Scene
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     if (this._table.frontDrawPile && !this._cardAnimationQueue.isProcessing)
     {
-      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.id);
+      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.name);
       if (frontDrawPileGameObject === targetPileGameObject)
       {
         this._table.dealCardsFromDrawPile();
@@ -272,7 +245,7 @@ export default class MainScene extends Phaser.Scene
       && !dragPileGameObject.active)
     {
       const targetPile = this._table.getPileByCardId(cardGameObject.name);
-      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.id);
+      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.name);
       const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
 
       if (Pile.checkIfCardsAreDescending({cards: targetPile.cards.slice(-size), faceUp: true, inSuit: true}))
@@ -317,9 +290,9 @@ export default class MainScene extends Phaser.Scene
     if (targetPileGameObject === dragPileGameObject && dragPileGameObject.active)
     {
       const fromPile = this._table.getPileByCardId(cardGameObject.name);
-      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.id);
+      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.name);
       const toPileGameObject = this._tableGameObject.getPileGameObjectBy(p => p.zone === zone);
-      const toPile = this._table.getPileById(toPileGameObject.name);
+      const toPile = this._table.getPileByName(toPileGameObject.name);
       const size = dragPileGameObject.cardGameObjects.length;
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
@@ -356,7 +329,7 @@ export default class MainScene extends Phaser.Scene
     {
       const size = dragPileGameObject.cardGameObjects.length;
       const fromPile = this._table.getPileByCardId(cardGameObject.name);
-      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.id);
+      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.name);
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
       this._cardAnimationQueue.add(async () => {
@@ -367,8 +340,8 @@ export default class MainScene extends Phaser.Scene
   }
 
   onMoveCardsBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number}) {
-    const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
-    const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
+    const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.name);
+    const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.name);
 
     this._cardAnimationQueue.add(async () => {
       const cardGameObjects = fromPileGameObject.drawFrontCardGameObjects({size});
@@ -409,8 +382,8 @@ export default class MainScene extends Phaser.Scene
     {
       this._hintAnimationQueue.add(async (onQueueCancel) =>
       {
-        const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
-        const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
+        const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.name);
+        const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.name);
         const frontCardGameObjects = fromPileGameObject.getFrontGameObjects({size});
 
         hintPileGameObject.x = fromPileGameObject.x;

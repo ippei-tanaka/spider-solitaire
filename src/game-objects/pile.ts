@@ -9,8 +9,7 @@ export type PileGameObjectArgs = {
   name:string,
   isSpread?:boolean,
   isDropTarget?:boolean,
-  showDropZone?:boolean,
-  label?:string
+  showDropZone?:boolean
   // isInteractive?:boolean
 }
 
@@ -22,7 +21,6 @@ interface CardGameObjectAdjustedPosition {
 
 export class PileGameObject extends Phaser.GameObjects.Container
 {
-  private _label:string;
   private _isSpread:boolean = false;
   private _cardGameObjects:CardGameObject[] = [];
   private _zone:Phaser.GameObjects.Zone | undefined;
@@ -39,14 +37,12 @@ export class PileGameObject extends Phaser.GameObjects.Container
     name,
     isSpread,
     isDropTarget,
-    showDropZone,
-    label
+    showDropZone
     // isInteractive
   }:PileGameObjectArgs)
   {
     super(scene, x, y);
     this.name = name;
-    this._label = label || '';
 
     if (isSpread) {
       this._isSpread = true;
@@ -72,10 +68,6 @@ export class PileGameObject extends Phaser.GameObjects.Container
     //   this.setInteractive();
     //   this._isInteractive = true;
     // }
-  }
-
-  get label () {
-    return this._label;
   }
 
   private renderZone ()

@@ -4,12 +4,12 @@ import {PileGameObject} from './pile';
 
 export type TableGameObjectSettings = {
   scene:Phaser.Scene,
-  deckPileId:string,
-  drawPilesIds:string[],
-  tableauPilesIds:string[],
-  discardPilesIds:string[],
-  dragPileId:string,
-  hintPileId:string,
+  deckPileName:string,
+  drawPilesNames:string[],
+  tableauPilesNames:string[],
+  discardPilesNames:string[],
+  dragPileName:string,
+  hintPileName:string,
   cardGameObjects: CardGameObject[]
 };
 
@@ -26,12 +26,12 @@ export class TableGameObject extends Phaser.GameObjects.Container
 
   constructor ({
     scene,
-    deckPileId,
-    drawPilesIds,
-    tableauPilesIds,
-    discardPilesIds,
-    dragPileId,
-    hintPileId,
+    deckPileName,
+    drawPilesNames,
+    tableauPilesNames,
+    discardPilesNames,
+    dragPileName,
+    hintPileName,
     cardGameObjects
   }:TableGameObjectSettings)
   {
@@ -43,8 +43,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
       scene: this.scene,
       x:500,
       y:500,
-      name: deckPileId,
-      label: 'deck'
+      name: deckPileName
     });
     this._pileGameObjects = [...this._pileGameObjects, _deckPile];
     this._deckPileGameObject = _deckPile;
@@ -52,46 +51,43 @@ export class TableGameObject extends Phaser.GameObjects.Container
     this._deckPileGameObject.adjustCardGameObjectPositions();
     this.add(_deckPile);
 
-    for (let index = 0; index < drawPilesIds.length; index++)
+    for (let index = 0; index < drawPilesNames.length; index++)
     {
       const drawPile = new PileGameObject({
         scene: this.scene,
         x:55 + index * 20,
         y:77,
-        name: drawPilesIds[index],
-        label: 'draw' + index
+        name: drawPilesNames[index]
       });
       this._pileGameObjects = [...this._pileGameObjects, drawPile];
       this._drawPileGameObjects = [...this._drawPileGameObjects, drawPile];
       this.add(drawPile);
     }
 
-    for (let index = 0; index < tableauPilesIds.length; index++)
+    for (let index = 0; index < tableauPilesNames.length; index++)
     {
       const tableauPile = new PileGameObject({
         scene: this.scene,
         x:55 + index * 90,
         y:210,
-        name: tableauPilesIds[index],
+        name: tableauPilesNames[index],
         isSpread: true,
         isDropTarget: true,
-        showDropZone: true,
-        label: 'tableau' + index
+        showDropZone: true
       });
       this._pileGameObjects = [...this._pileGameObjects, tableauPile];
       this._tableauPileGameObjects = [...this._tableauPileGameObjects, tableauPile];
       this.add(tableauPile);
     }
 
-    for (let index = 0; index < discardPilesIds.length; index++)
+    for (let index = 0; index < discardPilesNames.length; index++)
     {
       const discardPile = new PileGameObject({
         scene: this.scene,
         x:235 + index * 90,
         y:77,
         showDropZone: true,
-        name: discardPilesIds[index],
-        label: 'discard' + index
+        name: discardPilesNames[index]
       });
       this._pileGameObjects = [...this._pileGameObjects, discardPile];
       this._discardPileGameObjects = [...this._discardPileGameObjects, discardPile];
@@ -102,9 +98,8 @@ export class TableGameObject extends Phaser.GameObjects.Container
       scene: this.scene,
       x: 0,
       y: 0,
-      name: dragPileId,
-      isSpread: true,
-      label: 'drag'
+      name: dragPileName,
+      isSpread: true
     });
     this._pileGameObjects = [...this._pileGameObjects, _dragPileGameObject];
     this._dragPileGameObject = _dragPileGameObject;
@@ -115,9 +110,8 @@ export class TableGameObject extends Phaser.GameObjects.Container
       scene: this.scene,
       x: 0,
       y: 0,
-      name: hintPileId,
-      isSpread: true,
-      label: 'hint'
+      name: hintPileName,
+      isSpread: true
     });
     this._pileGameObjects = [...this._pileGameObjects, _hintPileGameObject];
     this._hintPileGameObject = _hintPileGameObject;

@@ -26,8 +26,8 @@ export const simplify = (action:UndoableAction):SimplifiedUndoableAction => {
     case MOVE_CARD:
       return {
         t: "M",
-        f: action.from.id,
-        o: action.to.id,
+        f: action.from.name,
+        o: action.to.name,
         s: action.size + '',
       };
     default:
@@ -43,8 +43,8 @@ export const recover = ({
   pileFinder
 }:{
   simplifiedUndoableAction:SimplifiedUndoableAction,
-  cardFinder: (id:string) => Card,
-  pileFinder: (id:string) => Pile,
+  cardFinder: (name:string) => Card,
+  pileFinder: (name:string) => Pile,
 }):UndoableAction => {
   switch (action.t)
   {
@@ -60,6 +60,7 @@ export const recover = ({
         to: pileFinder(action.o || ''),
         size: parseInt(action.s || ''),
       };
+    case "P":
     default:
       return {
         type: PAUSE
