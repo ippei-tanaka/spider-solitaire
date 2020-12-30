@@ -192,7 +192,7 @@ export default class MainScene extends Phaser.Scene
       scene: this,
       x: 337,
       y: 520,
-      label: 'Menu(H)'
+      label: 'Menu(M)'
     });
     menuButton.on('pointerdown', () => this.showMenu());
     this.children.add(menuButton);
