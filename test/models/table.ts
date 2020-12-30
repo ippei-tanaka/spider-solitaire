@@ -525,6 +525,17 @@ test('Table save steps and recover it', () => {
     size: 1
   });
 
+  expect(table.tableauPiles[0].frontCard?.rank).toBe(11);
+  expect(table.tableauPiles[0].cards.length).toBe(10);
+  expect(table.tableauPiles[1].frontCard?.rank).toBe(2);
+  expect(table.tableauPiles[1].cards.length).toBe(12);
+  expect(table.tableauPiles[2].frontCard?.rank).toBe(4);
+  expect(table.tableauPiles[2].cards.length).toBe(11);
+  expect(table.tableauPiles[3].frontCard?.rank).toBe(5);
+  expect(table.tableauPiles[3].cards.length).toBe(11);
+  expect(table.drawPiles[0].cards.length).toBe(4);
+  expect(table.drawPiles[1].cards.length).toBe(4);
+
   table.moveCardBetweenTableauPiles({
     from: table.tableauPiles[1],
     to: table.tableauPiles[2],
@@ -570,4 +581,19 @@ test('Table save steps and recover it', () => {
   expect(table2.tableauPiles[3].cards.length).toBe(13);
   expect(table2.drawPiles[0].cards.length).toBe(4);
   expect(table2.drawPiles[1].cards.length).toBe(0);
+
+  table2.undo();
+  table2.undo();
+  table2.undo();
+
+  expect(table2.tableauPiles[0].frontCard?.rank).toBe(11);
+  expect(table2.tableauPiles[0].cards.length).toBe(10);
+  expect(table2.tableauPiles[1].frontCard?.rank).toBe(2);
+  expect(table2.tableauPiles[1].cards.length).toBe(12);
+  expect(table2.tableauPiles[2].frontCard?.rank).toBe(4);
+  expect(table2.tableauPiles[2].cards.length).toBe(11);
+  expect(table2.tableauPiles[3].frontCard?.rank).toBe(5);
+  expect(table2.tableauPiles[3].cards.length).toBe(11);
+  expect(table2.drawPiles[0].cards.length).toBe(4);
+  expect(table2.drawPiles[1].cards.length).toBe(4);
 });
