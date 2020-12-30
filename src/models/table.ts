@@ -27,7 +27,7 @@ export class Table
   private _tableauPiles:Pile[];
   private _discardPiles:Pile[];
   private _piles:Pile[];
-  private _actionHistory:UndoableActionHistory;
+  protected _actionHistory:UndoableActionHistory;
   private _simplifiedUndoableActions:SimplifiedUndoableAction[];
 
   constructor (settings: TableSettings)

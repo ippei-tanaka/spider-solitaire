@@ -35,7 +35,6 @@ export default class MainScene extends Phaser.Scene
 
   constructor () {
     super('main');
-    // console.log(Phaser.Math.RND.uuid());
   }
 
   private get _table () {
@@ -66,22 +65,29 @@ export default class MainScene extends Phaser.Scene
     // console.log(Phaser.Math.RND.uuid());
     // console.log(Phaser.Math.RND.uuid());
 
-    // const seed = window.localStorage.getItem('seed');
-    // if (seed)
-    // {
-    //   this._RND.init(seed.split('-'));
-    // }
+    const seed = localStorage.getItem('seed');
+    if (seed) {
+      this._RND.state(seed);
+    } else {
+      localStorage.setItem('seed', this._RND.state());
+    }
 
     this.__table = new Table({
       numberOfTableauPiles: 10,
       numberOfDrawPiles: 5,
-      cards: createCards({
-        numberOfDecksUsed: 8,
-        numberOfSuits: 1
+      cards: this._RND.shuffle(createCards({
+        numberOfDecksUsed: 2,
+        numberOfSuits: 4,
+        mapping: ({rank, suit, isFaceUp}) => new Card({
+          suit,
+          rank,
+          isFaceUp,
+          id: this._RND.uuid()
+        })
       }).map(card => {
         card.onFlipOver(this.onFlipOverCard.bind(this))
         return card;
-      })
+      }))
     });
 
     this.__tableGameObject = new TableGameObject({
@@ -111,8 +117,6 @@ export default class MainScene extends Phaser.Scene
         return cardGameObject;
       })
     });
-
-    // console.log(this._tableGameObject);
 
     this.children.add(this._tableGameObject);
 
@@ -167,12 +171,21 @@ export default class MainScene extends Phaser.Scene
     });
 
     this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
+
+    this._table.onActionHappen(() => {
+      localStorage.setItem('actions', JSON.stringify(this._table.simplifiedUndoableActions));
+    });
+
     this._table.startGame();
+
+    const actions = localStorage.getItem('actions');
+    if (seed && actions) {
+      this._table.reproduce(JSON.parse(actions));
+    }
 
     const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     dKey.on('down', (_:KeyboardEvent) => {
-      this.scene.pause();
-      this.scene.launch('gameover');
+      this.endGame();
     });
   }
 
@@ -355,8 +368,8 @@ export default class MainScene extends Phaser.Scene
 
     if (this._table.isClear) {
       this._cardAnimationQueue.add(async () => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        this.scene.start('gameover');
+        await new Promise(resolve => setTimeout(resolve, 100));
+        this.endGame();
       });
     }
   }
@@ -427,6 +440,14 @@ export default class MainScene extends Phaser.Scene
 
       });
     }
+  }
+
+  endGame ()
+  {
+    this.scene.pause();
+    localStorage.removeItem('seed');
+    localStorage.removeItem('actions');
+    this.scene.launch('gameover');
   }
 
 }

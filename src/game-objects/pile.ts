@@ -186,7 +186,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
             x: position.x,
             y: position.y
           },
-          duration: 70,
+          duration: 45,
           onComplete: () => res()
         });
     })))
@@ -215,7 +215,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
           scaleX: 1.1,
           scaleY: 1.1
         },
-        duration: 40,
+        duration: 35,
         onComplete: () => resolve()
       });
     });
