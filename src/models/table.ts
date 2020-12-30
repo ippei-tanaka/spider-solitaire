@@ -378,7 +378,7 @@ export class Table
     }
   }
 
-  getPossibleMovesBetweenTableauPiles ()
+  getHints ()
   {
     let moves:{size:number, from: Pile, to: Pile}[] = [];
 
@@ -389,15 +389,23 @@ export class Table
 
       for (let to of this._tableauPiles)
       {
-        if (to === from) continue;
+        if (from === to) continue;
+
+        if (drawableCards.length === from.cards.length
+          && !to.frontCard)
+          continue;
 
         for (let size = drawableCards.length; size > 0; size--)
         {
-          if (to.frontCard && !Pile.checkIfCardsAreDescending({
-            cards: [to.frontCard, ...drawableCards.slice(-size)],
-            inSuit: false,
-            faceUp: true
-          })) continue;
+          if (size !== drawableCards.length
+            && !to.frontCard) continue;
+
+          if (to.frontCard
+            && !Pile.checkIfCardsAreDescending({
+              cards: [to.frontCard, ...drawableCards.slice(-size)],
+              inSuit: false,
+              faceUp: true
+            })) continue;
 
           moves = [...moves, {from, to, size}];
         }

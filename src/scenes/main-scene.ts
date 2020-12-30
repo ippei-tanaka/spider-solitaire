@@ -203,40 +203,30 @@ export default class MainScene extends Phaser.Scene
     });
   }
 
-  onCardPointerOver ({cardGameObject, pointer}:{cardGameObject:CardGameObject, pointer:Pointer})
+  onCardPointerOver ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    if (!this._cardAnimationQueue.isProcessing) {
-      this.addHighlightToCardGameObject({cardGameObject});
-    }/* else {
-      this._cardAnimationQueue.add(async () => {
-        if(this.input.hitTestPointer(pointer)[0] === cardGameObject) {
-          this.addHighlightToCardGameObject({cardGameObject});
+    if (!this._cardAnimationQueue.isProcessing)
+    {
+      const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
+
+      if (cardGameObject.isFaceUp
+        && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject))
+      {
+        const targetPile = this._table.getPileByCardId(cardGameObject.name);
+        const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.name);
+        const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
+        if (Pile.checkIfCardsAreDescending({cards: targetPile.cards.slice(-size), faceUp: true, inSuit: true}))
+        {
+          cardGameObject.addHighlight();
         }
-      });
-    }*/
-  }
-
-  addHighlightToCardGameObject ({cardGameObject}:{cardGameObject:CardGameObject})
-  {
-    const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
-
-    if (cardGameObject.isFaceUp
-      && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject))
-    {
-      const targetPile = this._table.getPileByCardId(cardGameObject.name);
-      const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.name);
-      const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
-      if (Pile.checkIfCardsAreDescending({cards: targetPile.cards.slice(-size), faceUp: true, inSuit: true}))
-      {
-        cardGameObject.addHighlight();
       }
-    }
-    else if (this._table.frontDrawPile)
-    {
-      const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.name);
-      if (targetPileGameObject === frontDrawPileGameObject)
+      else if (this._table.frontDrawPile)
       {
-        cardGameObject.addHighlight();
+        const frontDrawPileGameObject = this._tableGameObject.getPileGameObjectByName(this._table.frontDrawPile.name);
+        if (targetPileGameObject === frontDrawPileGameObject)
+        {
+          cardGameObject.addHighlight();
+        }
       }
     }
   }
@@ -248,7 +238,6 @@ export default class MainScene extends Phaser.Scene
 
   onCardPointerDown ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    // if (!cardGameObject.isHighLighted) return;
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     if (this._table.frontDrawPile && !this._cardAnimationQueue.isProcessing)
     {
@@ -262,8 +251,6 @@ export default class MainScene extends Phaser.Scene
 
   onCardDragStart ({cardGameObject}:{cardGameObject:CardGameObject})
   {
-    // if (!cardGameObject.isHighLighted) return;
-
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
 
@@ -296,8 +283,6 @@ export default class MainScene extends Phaser.Scene
 
   onCardDrag ({pointer, cardGameObject}:{pointer:Pointer, cardGameObject:CardGameObject})
   {
-    // if (!cardGameObject.isHighLighted) return;
-
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
 
     const dragPileGameObject = this._tableGameObject.dragPileGameObject;
@@ -397,7 +382,7 @@ export default class MainScene extends Phaser.Scene
 
   showHints ()
   {
-    const moves = this._table.getPossibleMovesBetweenTableauPiles();
+    const moves = this._table.getHints();
     const hintPileGameObject = this._tableGameObject.hintPileGameObject;
     const clearHintPileGameObject = () => {
       const cardGameObjects = hintPileGameObject

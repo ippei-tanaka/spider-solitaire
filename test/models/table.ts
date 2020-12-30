@@ -403,7 +403,7 @@ test('Table complete a suit and win the game', () => {
 
 
 
-test('Table possible moves', () => {
+test('Table hints', () => {
   const table = new Table({
     numberOfTableauPiles: 5,
     numberOfDrawPiles: 0,
@@ -461,9 +461,9 @@ test('Table possible moves', () => {
     }))
   });
 
-  const moves = table.getPossibleMovesBetweenTableauPiles();
+  const moves = table.getHints();
 
-  expect(moves.length).toBe(9);
+  expect(moves.length).toBe(7);
 
   expect(moves[0].from).toBe(table.tableauPiles[0]);
   expect(moves[0].to).toBe(table.tableauPiles[1]);
@@ -473,33 +473,33 @@ test('Table possible moves', () => {
   expect(moves[1].to).toBe(table.tableauPiles[3]);
   expect(moves[1].size).toBe(2);
 
+  // expect(moves[2].from).toBe(table.tableauPiles[0]);
+  // expect(moves[2].to).toBe(table.tableauPiles[3]);
+  // expect(moves[2].size).toBe(1);
+
   expect(moves[2].from).toBe(table.tableauPiles[0]);
-  expect(moves[2].to).toBe(table.tableauPiles[3]);
+  expect(moves[2].to).toBe(table.tableauPiles[4]);
   expect(moves[2].size).toBe(1);
 
-  expect(moves[3].from).toBe(table.tableauPiles[0]);
-  expect(moves[3].to).toBe(table.tableauPiles[4]);
+  expect(moves[3].from).toBe(table.tableauPiles[1]);
+  expect(moves[3].to).toBe(table.tableauPiles[2]);
   expect(moves[3].size).toBe(1);
 
-  expect(moves[4].from).toBe(table.tableauPiles[1]);
-  expect(moves[4].to).toBe(table.tableauPiles[2]);
+  // expect(moves[5].from).toBe(table.tableauPiles[1]);
+  // expect(moves[5].to).toBe(table.tableauPiles[3]);
+  // expect(moves[5].size).toBe(1);
+
+  expect(moves[4].from).toBe(table.tableauPiles[2]);
+  expect(moves[4].to).toBe(table.tableauPiles[3]);
   expect(moves[4].size).toBe(1);
 
-  expect(moves[5].from).toBe(table.tableauPiles[1]);
-  expect(moves[5].to).toBe(table.tableauPiles[3]);
+  expect(moves[5].from).toBe(table.tableauPiles[4]);
+  expect(moves[5].to).toBe(table.tableauPiles[1]);
   expect(moves[5].size).toBe(1);
 
-  expect(moves[6].from).toBe(table.tableauPiles[2]);
+  expect(moves[6].from).toBe(table.tableauPiles[4]);
   expect(moves[6].to).toBe(table.tableauPiles[3]);
   expect(moves[6].size).toBe(1);
-
-  expect(moves[7].from).toBe(table.tableauPiles[4]);
-  expect(moves[7].to).toBe(table.tableauPiles[1]);
-  expect(moves[7].size).toBe(1);
-
-  expect(moves[8].from).toBe(table.tableauPiles[4]);
-  expect(moves[8].to).toBe(table.tableauPiles[3]);
-  expect(moves[8].size).toBe(1);
 });
 
 
