@@ -21,6 +21,9 @@ const config = {
     },
     autoRound: true
   },
+  physics: {
+    default: 'arcade'
+  },
   // roundPixels: true,
   scene: [BootScene, MainScene, GameClearScene, MenuScene],
   backgroundColor: '#' + BACKGROUND_COLOR.toString(16)

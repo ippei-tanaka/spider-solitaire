@@ -131,7 +131,7 @@ export default class MainScene extends Phaser.Scene
       scene: this,
       x: 77,
       y: 520,
-      label: 'Undo(U)'
+      label: 'Undo'
     });
     undoButton.on('pointerdown', () => this._table.undo());
     this.children.add(undoButton);
@@ -142,16 +142,16 @@ export default class MainScene extends Phaser.Scene
     this._hintAnimationQueue.onQueueEnd(() => undoButton.enable());
     this._hintAnimationQueue.onQueueCancel(() => undoButton.enable());
 
-    const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
-    uKey.on('down', (_:KeyboardEvent) => {
-      if (!undoButton.isDisabled) this._table.undo();
-    });
+    // const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
+    // uKey.on('down', (_:KeyboardEvent) => {
+    //   if (!undoButton.isDisabled) this._table.undo();
+    // });
 
     const hintButton = new Button({
       scene: this,
       x: 206,
       y: 520,
-      label: 'Hint(H)'
+      label: 'Hint'
     });
     hintButton.on('pointerdown', () => this.showHints());
     this.children.add(hintButton);
@@ -162,10 +162,10 @@ export default class MainScene extends Phaser.Scene
     this._hintAnimationQueue.onQueueEnd(() => hintButton.enable());
     this._hintAnimationQueue.onQueueCancel(() => hintButton.enable());
 
-    const hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-    hKey.on('down', (_:KeyboardEvent) => {
-      if (!hintButton.isDisabled) this.showHints();
-    });
+    // const hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    // hKey.on('down', (_:KeyboardEvent) => {
+    //   if (!hintButton.isDisabled) this.showHints();
+    // });
 
     this.input.on('pointerdown', (_:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
       if(!gameObjects.includes(hintButton) && this._hintAnimationQueue.isProcessing)
@@ -196,15 +196,15 @@ export default class MainScene extends Phaser.Scene
       scene: this,
       x: 337,
       y: 520,
-      label: 'Menu(M)'
+      label: 'Menu'
     });
     menuButton.on('pointerdown', () => this.showMenu());
     this.children.add(menuButton);
 
-    const mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-    mKey.on('up', (_:KeyboardEvent) => {
-      this.showMenu();
-    });
+    // const mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+    // mKey.on('up', (_:KeyboardEvent) => {
+    //   this.showMenu();
+    // });
   }
 
   onCardPointerOver ({cardGameObject}:{cardGameObject:CardGameObject})

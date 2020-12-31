@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {Button} from '../game-objects/button';
+import {BACKGROUND_COLOR} from '../settings';
 
 const Rectangle = Phaser.GameObjects.Rectangle;
 const Text = Phaser.GameObjects.Text;
@@ -20,7 +21,7 @@ export default class GameClearScene extends Phaser.Scene
       stageHeight / 2,
       stageWidth,
       stageHeight,
-      0xf0f0f0,
+      BACKGROUND_COLOR,
       0.8
     );
     this.children.add(bg);
@@ -31,13 +32,14 @@ export default class GameClearScene extends Phaser.Scene
       0,
       'Congratulations!',
       {
-        fontSize: "50px",
-        color: '#ff00dd',
+        fontSize: "90px",
+        color: '#ffffff',
+        fontStyle: 'bold',
         fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif'
       }
     );
     text.x = stageWidth / 2 - text.width / 2;
-    text.y = stageHeight / 2 - text.height / 2 - 20;
+    text.y = stageHeight / 2 - text.height / 2 - 30;
     this.children.add(text);
 
     const startButton = new Button({
@@ -47,7 +49,7 @@ export default class GameClearScene extends Phaser.Scene
       label: 'Start Over'
     });
     startButton.x = stageWidth / 2;
-    startButton.y = stageHeight / 2 + 50;
+    startButton.y = stageHeight / 2 + 70;
     startButton.on('pointerdown', () => {
       this.scene.start('main');
     });
