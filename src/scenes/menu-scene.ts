@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {Button} from '../game-objects/button';
+import {BACKGROUND_COLOR} from '../settings';
 
 const Rectangle = Phaser.GameObjects.Rectangle;
 const Text = Phaser.GameObjects.Text;
@@ -20,54 +21,42 @@ export default class MenuScene extends Phaser.Scene
       stageHeight / 2,
       stageWidth,
       stageHeight,
-      0xf0f0f0,
+      BACKGROUND_COLOR,
       0.8
     );
     this.children.add(bg);
 
-    // const text = new Text(
-    //   this,
-    //   0,
-    //   0,
-    //   'Congratulations!',
-    //   {
-    //     fontSize: "50px",
-    //     color: '#ff00dd',
-    //     fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif'
-    //   }
-    // );
-    // text.x = stageWidth / 2 - text.width / 2;
-    // text.y = stageHeight / 2 - text.height / 2 - 20;
-    // this.children.add(text);
-
-    const backButton = new Button({
+    const backToGameButton = new Button({
       scene: this,
       x: 0,
       y: 0,
-      label: 'Back'
+      label: 'Back to Game'
     });
-    backButton.x = stageWidth / 2 - 80;
-    backButton.y = stageHeight / 2 + 50;
-    backButton.on('pointerdown', () => {
+    backToGameButton.x = stageWidth / 2;
+    backToGameButton.y = stageHeight / 2 - 50;
+    backToGameButton.on('pointerdown', () => {
       this.scene.resume('main');
       this.scene.stop();
     });
-    this.children.add(backButton);
+    this.children.add(backToGameButton);
 
     const startOverButton = new Button({
       scene: this,
       x: 0,
       y: 0,
-      label: 'Start Over'
+      label: 'Quit and Start New Game'
     });
-    startOverButton.x = stageWidth / 2 + 50;
+    startOverButton.x = stageWidth / 2;
     startOverButton.y = stageHeight / 2 + 50;
     startOverButton.on('pointerdown', () => {
       localStorage.removeItem('seed');
       localStorage.removeItem('actions');
-      this.scene.start('main');
+      localStorage.removeItem('game-mode');
+      this.scene.stop('main');
+      this.scene.start('boot');
     });
     this.children.add(startOverButton);
+
   }
 
 }

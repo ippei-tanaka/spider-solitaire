@@ -5,7 +5,8 @@ export enum Suit {
   Spade = '♠',
   Club = '♣',
   Diamond = '♦',
-  Heart = '♥'
+  Heart = '♥',
+  Star = '★'
 }
 
 const getRankText = (rank:number) =>

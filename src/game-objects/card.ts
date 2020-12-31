@@ -18,6 +18,8 @@ const getSuitText = (suit:Suit) =>
     return '♦';
     case Suit.Heart:
     return '♥';
+    case Suit.Star:
+    return '★';
   }
 }
 
@@ -26,10 +28,12 @@ const getSuitColor = (suit:Suit) =>
   switch(suit) {
     case Suit.Spade:
     case Suit.Club:
-    return '#000000';
+      return '#000000';
     case Suit.Diamond:
     case Suit.Heart:
-    return '#ff0000';
+      return '#ff0000';
+    case Suit.Star:
+      return '#0951f7';
   }
 }
 
@@ -122,7 +126,7 @@ export class CardGameObject extends Container
     this.add(frame);
     this._frame = frame;
 
-    const rankText = new Text(this.scene, x - 33, y - 57,  getRankText(rank) + getSuitText(suit),  {
+    const rankText = new Text(this.scene, x - 33, y - 55,  getRankText(rank) + getSuitText(suit),  {
       fontSize: "25px",
       color: getSuitColor(suit),
       fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif'

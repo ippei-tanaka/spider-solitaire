@@ -35,6 +35,8 @@ export const createCards = ({
       const index = i * 13 + 13;
       switch (numberOfSuits)
       {
+        case 5:
+          deckCards.push(_mapping({rank, suit: Suit.Star, isFaceUp: false, index}));
         case 4:
           deckCards.push(_mapping({rank, suit: Suit.Diamond, isFaceUp: false, index}));
         case 3:

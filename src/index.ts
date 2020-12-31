@@ -5,6 +5,7 @@ import BootScene from "./scenes/boot-scene";
 // import GameOverScene from "./scenes/gameover-scene";
 import GameClearScene from "./scenes/gameclear-scene";
 import MenuScene from "./scenes/menu-scene";
+import {BACKGROUND_COLOR} from './settings';
 
 const config = {
   type: Phaser.AUTO,
@@ -18,8 +19,8 @@ const config = {
       height: 563
     }
   },
-  scene: [MainScene,  BootScene, GameClearScene, MenuScene],
-  backgroundColor: "#73ba2c"
+  scene: [BootScene, MainScene, GameClearScene, MenuScene],
+  backgroundColor: '#' + BACKGROUND_COLOR.toString(16)
 };
 
 window.addEventListener("load", () => {

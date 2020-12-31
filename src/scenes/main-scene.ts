@@ -15,6 +15,7 @@ import {createCards} from '../models/create-cards';
 // import {emitter as modelEventEmitter} from '../models-with-events/emitter';
 import {JobQueue} from '../job-queue';
 // import {debounce} from 'underscore';
+import {gameModes} from '../models/game-modes';
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
@@ -59,11 +60,14 @@ export default class MainScene extends Phaser.Scene
 
   create ()
   {
-    // console.log(Phaser.Math.RND.state());
-    // console.log(Phaser.Math.RND.uuid());
-    // console.log(Phaser.Math.RND.uuid());
-    // console.log(Phaser.Math.RND.uuid());
-    // console.log(Phaser.Math.RND.uuid());
+    const gameModeKey = localStorage.getItem('game-mode');
+    if (!gameModeKey || !gameModes[gameModeKey])
+    {
+      this.scene.start('boot');
+      return;
+    }
+
+    const gameMode = gameModes[gameModeKey]
 
     const seed = localStorage.getItem('seed');
     if (seed) {
@@ -73,11 +77,11 @@ export default class MainScene extends Phaser.Scene
     }
 
     this.__table = new Table({
-      numberOfTableauPiles: 10,
-      numberOfDrawPiles: 5,
+      numberOfTableauPiles: gameMode.numberOfTableauPiles,
+      numberOfDrawPiles: gameMode.numberOfDrawPiles,
       cards: this._RND.shuffle(createCards({
-        numberOfDecksUsed: 2,
-        numberOfSuits: 4,
+        numberOfDecksUsed: gameMode.numberOfDecksUsed,
+        numberOfSuits: gameMode.numberOfSuits,
         mapping: ({rank, suit, isFaceUp}) => new Card({
           suit,
           rank,
