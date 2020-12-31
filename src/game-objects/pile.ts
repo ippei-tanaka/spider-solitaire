@@ -26,9 +26,10 @@ export class PileGameObject extends Phaser.GameObjects.Container
   private _zone:Phaser.GameObjects.Zone | undefined;
   private _zoneRect:Phaser.GameObjects.Rectangle | undefined;
   // private _isInteractive:boolean = false;
-  private readonly _faceDownCardGap:number = 15;
-  private readonly _faceUpCardGap:number = 26;
-  private readonly _maxHeightOfGaps:number = 380 - CardGameObject.HEIGHT;
+  static readonly FACE_DOWN_CARD_GAP:number = 17;
+  static readonly FACE_UP_CARD_GAP:number = 33;
+  static readonly MAX_HEIGHT:number = 570;
+  static readonly MAX_HEIGHT_OF_GAPS:number = PileGameObject.MAX_HEIGHT - CardGameObject.HEIGHT;
 
   constructor ({
     scene,
@@ -128,7 +129,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
     const frontCard = positions[positions.length - 1];
     return frontCard ? {
       x: 0,
-      y: frontCard.y + this._faceUpCardGap
+      y: frontCard.y + PileGameObject.FACE_UP_CARD_GAP
     } : {
       x: 0,
       y: 0
@@ -148,17 +149,23 @@ export class PileGameObject extends Phaser.GameObjects.Container
       }));
     }
 
+    const {
+      FACE_UP_CARD_GAP,
+      FACE_DOWN_CARD_GAP,
+      MAX_HEIGHT_OF_GAPS
+    } = PileGameObject;
+
     const numberOfGaps = this._cardGameObjects.length - 1;
     const numberOfFaceUpCardGaps = this._cardGameObjects.slice(0, -1).reduce((pre, cur) => pre + (cur.isFaceUp ? 1 : 0), 0);
     const numberOfFaceDownCardGaps = numberOfGaps - numberOfFaceUpCardGaps;
-    const heihgtOfGaps = numberOfFaceUpCardGaps * this._faceUpCardGap + numberOfFaceDownCardGaps * this._faceDownCardGap;
+    const heihgtOfGaps = numberOfFaceUpCardGaps * FACE_UP_CARD_GAP + numberOfFaceDownCardGaps * FACE_DOWN_CARD_GAP ;
 
-    let gapOfFaceUpCard = this._faceUpCardGap;
-    let gapOfFaceDownCard = this._faceDownCardGap;
+    let gapOfFaceUpCard = FACE_UP_CARD_GAP;
+    let gapOfFaceDownCard = FACE_DOWN_CARD_GAP;
 
-    if (heihgtOfGaps > this._maxHeightOfGaps) {
-      gapOfFaceUpCard = this._maxHeightOfGaps / (numberOfFaceUpCardGaps + numberOfFaceDownCardGaps * this._faceDownCardGap / this._faceUpCardGap);
-      gapOfFaceDownCard = this._maxHeightOfGaps / (numberOfFaceDownCardGaps + numberOfFaceUpCardGaps * this._faceUpCardGap / this._faceDownCardGap);
+    if (heihgtOfGaps > MAX_HEIGHT_OF_GAPS) {
+      gapOfFaceUpCard = MAX_HEIGHT_OF_GAPS / (numberOfFaceUpCardGaps + numberOfFaceDownCardGaps * FACE_DOWN_CARD_GAP / FACE_UP_CARD_GAP);
+      gapOfFaceDownCard = MAX_HEIGHT_OF_GAPS / (numberOfFaceDownCardGaps + numberOfFaceUpCardGaps * FACE_UP_CARD_GAP / FACE_DOWN_CARD_GAP);
     }
 
     let offset = 0;

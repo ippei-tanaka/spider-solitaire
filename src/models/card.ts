@@ -14,8 +14,9 @@ const getRankText = (rank:number) =>
   if (rank < 1 || 13 < rank) {
     throw new Error("Card rank is invalid.");
   }
-
-  if (rank === 11) {
+  if (rank === 1) {
+    return 'A';
+  } else if (rank === 11) {
     return 'J';
   } else if (rank === 12) {
     return 'Q';

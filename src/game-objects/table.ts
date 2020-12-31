@@ -2,6 +2,10 @@ import Phaser from "phaser";
 import {CardGameObject} from './card';
 import {PileGameObject} from './pile';
 
+const OUTER_PADDING = 25;
+const PADDING_BETWEEN_PILE_AREAS = 25;
+const PADDING_BETWEEN_TABLEAU_PILES = 11;
+
 export type TableGameObjectSettings = {
   scene:Phaser.Scene,
   deckPileName:string,
@@ -37,6 +41,9 @@ export class TableGameObject extends Phaser.GameObjects.Container
   {
     super(scene, 0, 0);
 
+    const stageWidth = this.scene.sys.game.canvas.width;
+    const stageHeight = this.scene.sys.game.canvas.height;
+
     this._cardGameObjects = cardGameObjects;
 
     const _deckPile = new PileGameObject({
@@ -55,8 +62,9 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const drawPile = new PileGameObject({
         scene: this.scene,
-        x:55 + index * 20,
-        y:77,
+        x: CardGameObject.WIDTH * 0.5 + OUTER_PADDING,
+        y: CardGameObject.HEIGHT * 0.5 + OUTER_PADDING
+          + index * PileGameObject.FACE_DOWN_CARD_GAP,
         name: drawPilesNames[index]
       });
       this._pileGameObjects = [...this._pileGameObjects, drawPile];
@@ -68,8 +76,12 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const tableauPile = new PileGameObject({
         scene: this.scene,
-        x:55 + index * 90,
-        y:210,
+        x: CardGameObject.WIDTH * 0.5
+          + OUTER_PADDING
+          + CardGameObject.WIDTH
+          + PADDING_BETWEEN_PILE_AREAS
+          + index * (CardGameObject.WIDTH + PADDING_BETWEEN_TABLEAU_PILES),
+        y: CardGameObject.HEIGHT * 0.5 + OUTER_PADDING,
         name: tableauPilesNames[index],
         isSpread: true,
         isDropTarget: true,
@@ -84,9 +96,13 @@ export class TableGameObject extends Phaser.GameObjects.Container
     {
       const discardPile = new PileGameObject({
         scene: this.scene,
-        x:235 + index * 90,
-        y:77,
-        showDropZone: true,
+        x: CardGameObject.WIDTH * 0.5 + OUTER_PADDING,
+        y: CardGameObject.HEIGHT * 0.5 + OUTER_PADDING
+          + CardGameObject.HEIGHT
+          + (drawPilesNames.length - 1) * PileGameObject.FACE_DOWN_CARD_GAP
+          + PADDING_BETWEEN_PILE_AREAS
+          + index * PileGameObject.FACE_DOWN_CARD_GAP,
+        // showDropZone: true,
         name: discardPilesNames[index]
       });
       this._pileGameObjects = [...this._pileGameObjects, discardPile];

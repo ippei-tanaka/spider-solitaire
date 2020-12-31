@@ -39,7 +39,9 @@ const getSuitColor = (suit:Suit) =>
 
 const getRankText = (rank:number) =>
 {
-  if (rank === 11) {
+  if (rank === 1) {
+    return 'A';
+  } else if (rank === 11) {
     return 'J';
   } else if (rank === 12) {
     return 'Q';
@@ -68,7 +70,7 @@ export class CardGameObject extends Container
   private _suit:Suit;
   private _isHighLighted:boolean = false;
 
-  static WIDTH:number = 70;
+  static WIDTH:number = 75;
   static HEIGHT:number = 110;
 
   constructor ({
@@ -126,8 +128,8 @@ export class CardGameObject extends Container
     this.add(frame);
     this._frame = frame;
 
-    const rankText = new Text(this.scene, x - 33, y - 55,  getRankText(rank) + getSuitText(suit),  {
-      fontSize: "25px",
+    const rankText = new Text(this.scene, x - 36, y - 59,  getRankText(rank) + getSuitText(suit),  {
+      fontSize: "32px",
       color: getSuitColor(suit),
       fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif'
     });
