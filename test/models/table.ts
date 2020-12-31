@@ -8,7 +8,7 @@ test('Table settings', () => {
     numberOfTableauPiles: 10,
     numberOfDrawPiles: 5,
     cards: createCards({
-      numberOfDecksUsed: 2,
+      numberOfSuitStacks: 8,
       numberOfSuits: 4
     })
   });
@@ -24,7 +24,7 @@ test('Table startGame', () => {
     numberOfTableauPiles: 10,
     numberOfDrawPiles: 5,
     cards: createCards({
-      numberOfDecksUsed: 2,
+      numberOfSuitStacks: 8,
       numberOfSuits: 4
     })
   });
@@ -65,7 +65,7 @@ test('Table dealCardsFromDrawPile', () => {
     numberOfTableauPiles: 10,
     numberOfDrawPiles: 5,
     cards: createCards({
-      numberOfDecksUsed: 2,
+      numberOfSuitStacks: 8,
       numberOfSuits: 4
     })
   });

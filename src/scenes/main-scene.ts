@@ -80,7 +80,7 @@ export default class MainScene extends Phaser.Scene
       numberOfTableauPiles: gameMode.numberOfTableauPiles,
       numberOfDrawPiles: gameMode.numberOfDrawPiles,
       cards: this._RND.shuffle(createCards({
-        numberOfDecksUsed: gameMode.numberOfDecksUsed,
+        numberOfSuitStacks: gameMode.numberOfSuitStacks,
         numberOfSuits: gameMode.numberOfSuits,
         mapping: ({rank, suit, isFaceUp}) => new Card({
           suit,
