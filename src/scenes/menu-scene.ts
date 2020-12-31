@@ -34,7 +34,7 @@ export default class MenuScene extends Phaser.Scene
     });
     backToGameButton.x = stageWidth / 2;
     backToGameButton.y = stageHeight / 2 - 50;
-    backToGameButton.on('pointerdown', () => {
+    backToGameButton.on('pointerup', () => {
       this.scene.resume('main');
       this.scene.stop();
     });
@@ -48,7 +48,7 @@ export default class MenuScene extends Phaser.Scene
     });
     startOverButton.x = stageWidth / 2;
     startOverButton.y = stageHeight / 2 + 50;
-    startOverButton.on('pointerdown', () => {
+    startOverButton.on('pointerup', () => {
       localStorage.removeItem('seed');
       localStorage.removeItem('actions');
       localStorage.removeItem('game-mode');

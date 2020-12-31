@@ -50,7 +50,7 @@ export default class GameClearScene extends Phaser.Scene
     });
     startButton.x = stageWidth / 2;
     startButton.y = stageHeight / 2 + 70;
-    startButton.on('pointerdown', () => {
+    startButton.on('pointerup', () => {
       this.scene.start('main');
     });
     this.children.add(startButton);

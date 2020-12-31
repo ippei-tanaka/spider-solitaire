@@ -113,7 +113,7 @@ export default class MainScene extends Phaser.Scene
         });
         cardGameObject.on("pointerover", (pointer:Pointer) => this.onCardPointerOver.call(this, {cardGameObject, pointer}));
         cardGameObject.on("pointerout", (pointer:Pointer) => this.onCardPointerOut.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("pointerdown", (pointer:Pointer) => this.onCardPointerDown.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("pointerup", (pointer:Pointer) => this.onCardPointerUp.call(this, {cardGameObject, pointer}));
         cardGameObject.on("dragstart", (pointer:Pointer) => this.onCardDragStart.call(this, {cardGameObject, pointer}));
         cardGameObject.on("drag", (pointer:Pointer) => this.onCardDrag.call(this, {cardGameObject, pointer}));
         cardGameObject.on("drop", (pointer:Pointer, zone:Zone) => this.onCardDrop.call(this, {cardGameObject, pointer, zone}));
@@ -133,7 +133,7 @@ export default class MainScene extends Phaser.Scene
       y: 520,
       label: 'Undo'
     });
-    undoButton.on('pointerdown', () => this._table.undo());
+    undoButton.on('pointerup', () => this._table.undo());
     this.children.add(undoButton);
     this._cardAnimationQueue.onQueueStart(() => undoButton.disable());
     this._cardAnimationQueue.onQueueEnd(() => undoButton.enable());
@@ -153,7 +153,7 @@ export default class MainScene extends Phaser.Scene
       y: 520,
       label: 'Hint'
     });
-    hintButton.on('pointerdown', () => this.showHints());
+    hintButton.on('pointerup', () => this.showHints());
     this.children.add(hintButton);
     this._cardAnimationQueue.onQueueStart(() => hintButton.disable());
     this._cardAnimationQueue.onQueueEnd(() => hintButton.enable());
@@ -167,7 +167,7 @@ export default class MainScene extends Phaser.Scene
     //   if (!hintButton.isDisabled) this.showHints();
     // });
 
-    this.input.on('pointerdown', (_:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
+    this.input.on('pointerup', (_:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
       if(!gameObjects.includes(hintButton) && this._hintAnimationQueue.isProcessing)
       {
         this._hintAnimationQueue.cancel();
@@ -198,7 +198,7 @@ export default class MainScene extends Phaser.Scene
       y: 520,
       label: 'Menu'
     });
-    menuButton.on('pointerdown', () => this.showMenu());
+    menuButton.on('pointerup', () => this.showMenu());
     this.children.add(menuButton);
 
     // const mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
@@ -240,7 +240,7 @@ export default class MainScene extends Phaser.Scene
     cardGameObject.removeHighlight();
   }
 
-  onCardPointerDown ({cardGameObject}:{cardGameObject:CardGameObject})
+  onCardPointerUp ({cardGameObject}:{cardGameObject:CardGameObject})
   {
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     if (this._table.frontDrawPile && !this._cardAnimationQueue.isProcessing)
