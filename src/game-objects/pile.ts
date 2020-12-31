@@ -9,7 +9,7 @@ export type PileGameObjectArgs = {
   name:string,
   isSpread?:boolean,
   isDropTarget?:boolean,
-  showDropZone?:boolean
+  showBottom?:boolean
   // isInteractive?:boolean
 }
 
@@ -25,11 +25,14 @@ export class PileGameObject extends Phaser.GameObjects.Container
   private _cardGameObjects:CardGameObject[] = [];
   private _zone:Phaser.GameObjects.Zone | undefined;
   private _zoneRect:Phaser.GameObjects.Rectangle | undefined;
+  private _bottom:Phaser.GameObjects.Rectangle | undefined;
   // private _isInteractive:boolean = false;
   static readonly FACE_DOWN_CARD_GAP:number = 17;
   static readonly FACE_UP_CARD_GAP:number = 33;
   static readonly MAX_HEIGHT:number = 570;
   static readonly MAX_HEIGHT_OF_GAPS:number = PileGameObject.MAX_HEIGHT - CardGameObject.HEIGHT;
+  static readonly LENIENCY_FOR_ZONE_HEIGHT = CardGameObject.HEIGHT * 0.5;
+  static readonly LENIENCY_FOR_ZONE_WIDTH = CardGameObject.WIDTH * 0.1;
 
   constructor ({
     scene,
@@ -38,7 +41,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
     name,
     isSpread,
     isDropTarget,
-    showDropZone
+    showBottom
     // isInteractive
   }:PileGameObjectArgs)
   {
@@ -51,16 +54,13 @@ export class PileGameObject extends Phaser.GameObjects.Container
 
     if (isDropTarget) {
       this._zone = this.renderZone();
-    }
-
-    if (showDropZone)
-    {
-      this._zoneRect = this.renderZoneRect();
-    }
-
-    if (isDropTarget || showDropZone)
-    {
+      // this._zoneRect = this.renderZoneRect();
       this.resizeZone();
+    }
+
+    if (showBottom)
+    {
+      this._bottom = this.renderBottom();
     }
 
     // if (isInteractive)
@@ -78,20 +78,37 @@ export class PileGameObject extends Phaser.GameObjects.Container
     return zone;
   }
 
-  private renderZoneRect ()
+  // private renderZoneRect ()
+  // {
+  //   const rect = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 1, 1, 0xff0000, 0.5);
+  //   this.add(rect);
+  //   return rect;
+  // }
+
+  private renderBottom ()
   {
-    const rect = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 1, 1, 0xffffff, 0.5);
+    const rect = new Phaser.GameObjects.Rectangle(
+      this.scene,
+      0,
+      0,
+      CardGameObject.WIDTH,
+      CardGameObject.HEIGHT,
+      0xffffff,
+      0.5
+    );
     this.add(rect);
     return rect;
   }
 
   private resizeZone ()
   {
-    const width = CardGameObject.WIDTH;
+    const width = CardGameObject.WIDTH + PileGameObject.LENIENCY_FOR_ZONE_WIDTH;
     const frontCardGameObject = this._cardGameObjects[this._cardGameObjects.length - 1];
-    const height = CardGameObject.HEIGHT + (frontCardGameObject ? frontCardGameObject.y : 0);
+    const height = CardGameObject.HEIGHT
+      + (frontCardGameObject ? frontCardGameObject.y : 0)
+      + PileGameObject.LENIENCY_FOR_ZONE_HEIGHT;
     const x = 0;
-    const y = (height / 2) - (CardGameObject.HEIGHT / 2);
+    const y = (height * 0.5) - (CardGameObject.HEIGHT * 0.5);
 
     if (this._zone)
     {
@@ -121,19 +138,6 @@ export class PileGameObject extends Phaser.GameObjects.Container
   get zone ()
   {
     return this._zone;
-  }
-
-  getNewFrontCardGameObjectPosition ()
-  {
-    const positions = this._getAdjustedCardGameObjectPositions();
-    const frontCard = positions[positions.length - 1];
-    return frontCard ? {
-      x: 0,
-      y: frontCard.y + PileGameObject.FACE_UP_CARD_GAP
-    } : {
-      x: 0,
-      y: 0
-    }
   }
 
   private _getAdjustedCardGameObjectPositions ()
@@ -196,7 +200,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
             x: position.x,
             y: position.y
           },
-          duration: 45,
+          duration: 80,
           onComplete: () => res()
         });
     })))
@@ -225,10 +229,23 @@ export class PileGameObject extends Phaser.GameObjects.Container
           scaleX: 1.1,
           scaleY: 1.1
         },
-        duration: 35,
+        duration: 70,
         onComplete: () => resolve()
       });
     });
+  }
+
+  getNewFrontCardGameObjectPosition ()
+  {
+    const positions = this._getAdjustedCardGameObjectPositions();
+    const frontCard = positions[positions.length - 1];
+    return frontCard ? {
+      x: 0,
+      y: frontCard.y + PileGameObject.FACE_UP_CARD_GAP
+    } : {
+      x: 0,
+      y: 0
+    }
   }
 
   placeCardGameObjects ({cardGameObjects}: {cardGameObjects:CardGameObject[]})

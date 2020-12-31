@@ -85,7 +85,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
         name: tableauPilesNames[index],
         isSpread: true,
         isDropTarget: true,
-        showDropZone: true
+        showBottom: true
       });
       this._pileGameObjects = [...this._pileGameObjects, tableauPile];
       this._tableauPileGameObjects = [...this._tableauPileGameObjects, tableauPile];
@@ -102,7 +102,6 @@ export class TableGameObject extends Phaser.GameObjects.Container
           + (drawPilesNames.length - 1) * PileGameObject.FACE_DOWN_CARD_GAP
           + PADDING_BETWEEN_PILE_AREAS
           + index * PileGameObject.FACE_DOWN_CARD_GAP,
-        // showDropZone: true,
         name: discardPilesNames[index]
       });
       this._pileGameObjects = [...this._pileGameObjects, discardPile];
