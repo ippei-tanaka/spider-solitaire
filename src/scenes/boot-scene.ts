@@ -53,7 +53,7 @@ export default class BootScene extends Phaser.Scene
       scene: this,
       x: 0,
       y: 0,
-      label: 'Once Suit'
+      label: 'One Suit'
     });
     oneSuitButton.x = stageWidth / 2 - oneSuitButton.width / 2 - 100;
     oneSuitButton.y = stageHeight / 2 - oneSuitButton.height / 2 + 120;
@@ -91,18 +91,18 @@ export default class BootScene extends Phaser.Scene
     });
     this.children.add(fourSuitButton);
 
-    const fiveSuitButton = new Button({
-      scene: this,
-      x: 0,
-      y: 0,
-      label: 'Five Suit'
-    });
-    fiveSuitButton.x = stageWidth / 2 - fiveSuitButton.width / 2 + 100;
-    fiveSuitButton.y = stageHeight / 2 - fiveSuitButton.height / 2 + 30;
-    fiveSuitButton.on('pointerdown', () => {
-      localStorage.setItem('game-mode', 'five-suits');
-      this.scene.start('main');
-    });
-    this.children.add(fiveSuitButton);
+    // const fiveSuitButton = new Button({
+    //   scene: this,
+    //   x: 0,
+    //   y: 0,
+    //   label: 'Five Suit'
+    // });
+    // fiveSuitButton.x = stageWidth / 2 - fiveSuitButton.width / 2 + 100;
+    // fiveSuitButton.y = stageHeight / 2 - fiveSuitButton.height / 2 + 30;
+    // fiveSuitButton.on('pointerdown', () => {
+    //   localStorage.setItem('game-mode', 'five-suits');
+    //   this.scene.start('main');
+    // });
+    // this.children.add(fiveSuitButton);
   }
 }

@@ -11,14 +11,17 @@ const config = {
   type: Phaser.AUTO,
   scale: {
     mode: Phaser.Scale.FIT,
+    // orientation: Phaser.Scale.Orientation.PORTRAIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: 1000,
     height: 563,
     max: {
       width: 1000,
       height: 563
-    }
+    },
+    autoRound: true
   },
+  // roundPixels: true,
   scene: [BootScene, MainScene, GameClearScene, MenuScene],
   backgroundColor: '#' + BACKGROUND_COLOR.toString(16)
 };
