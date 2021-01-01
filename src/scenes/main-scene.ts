@@ -120,18 +120,27 @@ export default class MainScene extends Phaser.Scene
       y: 520,
       label: 'Undo'
     });
-    undoButton.on('pointerup', () => {
-      // console.log('before', this._table.actionHistory.actions.map(a => a.type));
-      this._table.undo()
-      // console.log('after', this._table.actionHistory.actions.map(a => a.type));
-    });
+    undoButton.on('pointerup', () => this._table.undo());
     this.children.add(undoButton);
-    this._cardAnimationQueue.onQueueStart(() => undoButton.disable());
-    this._cardAnimationQueue.onQueueEnd(() => undoButton.enable());
-    this._cardAnimationQueue.onQueueCancel(() => undoButton.enable());
-    this._hintAnimationQueue.onQueueStart(() => undoButton.disable());
-    this._hintAnimationQueue.onQueueEnd(() => undoButton.enable());
-    this._hintAnimationQueue.onQueueCancel(() => undoButton.enable());
+    const updateUnduButtonDisablity = () => {
+      if (
+        this._table.actionHistory.actions.length === 0
+        || this._cardAnimationQueue.isProcessing
+        || this._hintAnimationQueue.isProcessing
+      ) {
+        undoButton.disable();
+      } else {
+        undoButton.enable();
+      }
+    }
+    this._cardAnimationQueue.onQueueStart(updateUnduButtonDisablity);
+    this._cardAnimationQueue.onQueueEnd(updateUnduButtonDisablity);
+    this._cardAnimationQueue.onQueueCancel(updateUnduButtonDisablity);
+    this._hintAnimationQueue.onQueueStart(updateUnduButtonDisablity);
+    this._hintAnimationQueue.onQueueEnd(updateUnduButtonDisablity);
+    this._hintAnimationQueue.onQueueCancel(updateUnduButtonDisablity);
+    updateUnduButtonDisablity();
+    this._table.onActionHappen(updateUnduButtonDisablity);
 
     // const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
     // uKey.on('down', (_:KeyboardEvent) => {
