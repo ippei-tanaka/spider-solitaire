@@ -1,4 +1,3 @@
-import {nanoid} from 'nanoid';
 import {Emitter} from '../event-emitter';
 
 export enum Suit {
@@ -14,8 +13,9 @@ const getRankText = (rank:number) =>
   if (rank < 1 || 13 < rank) {
     throw new Error("Card rank is invalid.");
   }
-
-  if (rank === 11) {
+  if (rank === 1) {
+    return 'A';
+  } else if (rank === 11) {
     return 'J';
   } else if (rank === 12) {
     return 'Q';
@@ -51,7 +51,7 @@ export class Card
   {
     this._suit = suit;
     this._isFaceUp = isFaceUp || false;
-    this._id = id || nanoid();
+    this._id = id || rank + Date.now() + '';
 
     if (1 <= rank && rank <= 13) {
       this._rank = rank;

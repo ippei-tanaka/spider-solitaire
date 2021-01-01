@@ -1,30 +1,17 @@
 import Phaser from "phaser";
 import {TableGameObject} from '../game-objects/table';
-// import {PileGameObjectWithEvent as PileGameObject} from '../game-objects-with-events/pile';
 import {CardGameObject} from '../game-objects/card';
-// import {emitter as gameObjectEventEmitter} from '../game-objects-with-events/emitter';
 import {Button} from '../game-objects/button';
 import {Card} from '../models/card';
 import {Pile} from '../models/pile';
-// import {CardWithEvent} from '../models-with-events/card';
-// import {PileWithEvent} from '../models-with-events/pile';
 import {Table} from '../models/table';
-// import {Table} from '../models/table';
 import {createCards} from '../models/create-cards';
-// import {randomizeArray} from '../models/create-cards';
-// import {emitter as modelEventEmitter} from '../models-with-events/emitter';
 import {JobQueue} from '../job-queue';
-// import {debounce} from 'underscore';
 import {gameModes} from '../models/game-modes';
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
 type RandomDataGenerator = Phaser.Math.RandomDataGenerator;
-// const RND = new Phaser.Math.RandomDataGenerator();
-// console.log(RND.uuid().split('-'));
-// RND.init(RND.uuid().split('-'));
-
-
 
 export default class MainScene extends Phaser.Scene
 {
@@ -33,6 +20,10 @@ export default class MainScene extends Phaser.Scene
   private __cardAnimationQueue:JobQueue<void> | undefined;
   private __hintAnimationQueue:JobQueue<void> | undefined;
   private _RND: RandomDataGenerator = new Phaser.Math.RandomDataGenerator();
+  private static readonly CARD_MOVE_DURATION = 80;
+  private _cardMoveDuration = MainScene.CARD_MOVE_DURATION;
+  private static readonly CARD_FLIP_DURATION = 80;
+  private _cardFlipDuration = MainScene.CARD_FLIP_DURATION;
 
   constructor () {
     super('main');
@@ -80,7 +71,7 @@ export default class MainScene extends Phaser.Scene
       numberOfTableauPiles: gameMode.numberOfTableauPiles,
       numberOfDrawPiles: gameMode.numberOfDrawPiles,
       cards: this._RND.shuffle(createCards({
-        numberOfDecksUsed: gameMode.numberOfDecksUsed,
+        numberOfSuitStacks: gameMode.numberOfSuitStacks,
         numberOfSuits: gameMode.numberOfSuits,
         mapping: ({rank, suit, isFaceUp}) => new Card({
           suit,
@@ -113,7 +104,7 @@ export default class MainScene extends Phaser.Scene
         });
         cardGameObject.on("pointerover", (pointer:Pointer) => this.onCardPointerOver.call(this, {cardGameObject, pointer}));
         cardGameObject.on("pointerout", (pointer:Pointer) => this.onCardPointerOut.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("pointerdown", (pointer:Pointer) => this.onCardPointerDown.call(this, {cardGameObject, pointer}));
+        cardGameObject.on("pointerup", (pointer:Pointer) => this.onCardPointerUp.call(this, {cardGameObject, pointer}));
         cardGameObject.on("dragstart", (pointer:Pointer) => this.onCardDragStart.call(this, {cardGameObject, pointer}));
         cardGameObject.on("drag", (pointer:Pointer) => this.onCardDrag.call(this, {cardGameObject, pointer}));
         cardGameObject.on("drop", (pointer:Pointer, zone:Zone) => this.onCardDrop.call(this, {cardGameObject, pointer, zone}));
@@ -131,29 +122,42 @@ export default class MainScene extends Phaser.Scene
       scene: this,
       x: 77,
       y: 520,
-      label: 'Undo(U)'
+      label: 'Undo'
     });
-    undoButton.on('pointerdown', () => this._table.undo());
+    undoButton.on('pointerup', () => this._table.undo());
     this.children.add(undoButton);
-    this._cardAnimationQueue.onQueueStart(() => undoButton.disable());
-    this._cardAnimationQueue.onQueueEnd(() => undoButton.enable());
-    this._cardAnimationQueue.onQueueCancel(() => undoButton.enable());
-    this._hintAnimationQueue.onQueueStart(() => undoButton.disable());
-    this._hintAnimationQueue.onQueueEnd(() => undoButton.enable());
-    this._hintAnimationQueue.onQueueCancel(() => undoButton.enable());
+    const updateUnduButtonDisablity = () => {
+      if (
+        this._table.actionHistory.actions.length === 0
+        || this._cardAnimationQueue.isProcessing
+        || this._hintAnimationQueue.isProcessing
+      ) {
+        undoButton.disable();
+      } else {
+        undoButton.enable();
+      }
+    }
+    this._cardAnimationQueue.onQueueStart(updateUnduButtonDisablity);
+    this._cardAnimationQueue.onQueueEnd(updateUnduButtonDisablity);
+    this._cardAnimationQueue.onQueueCancel(updateUnduButtonDisablity);
+    this._hintAnimationQueue.onQueueStart(updateUnduButtonDisablity);
+    this._hintAnimationQueue.onQueueEnd(updateUnduButtonDisablity);
+    this._hintAnimationQueue.onQueueCancel(updateUnduButtonDisablity);
+    updateUnduButtonDisablity();
+    this._table.onActionHappen(updateUnduButtonDisablity);
 
-    const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
-    uKey.on('down', (_:KeyboardEvent) => {
-      if (!undoButton.isDisabled) this._table.undo();
-    });
+    // const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
+    // uKey.on('down', (_:KeyboardEvent) => {
+    //   if (!undoButton.isDisabled) this._table.undo();
+    // });
 
     const hintButton = new Button({
       scene: this,
       x: 206,
       y: 520,
-      label: 'Hint(H)'
+      label: 'Hint'
     });
-    hintButton.on('pointerdown', () => this.showHints());
+    hintButton.on('pointerup', () => this.showHints());
     this.children.add(hintButton);
     this._cardAnimationQueue.onQueueStart(() => hintButton.disable());
     this._cardAnimationQueue.onQueueEnd(() => hintButton.enable());
@@ -162,12 +166,12 @@ export default class MainScene extends Phaser.Scene
     this._hintAnimationQueue.onQueueEnd(() => hintButton.enable());
     this._hintAnimationQueue.onQueueCancel(() => hintButton.enable());
 
-    const hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-    hKey.on('down', (_:KeyboardEvent) => {
-      if (!hintButton.isDisabled) this.showHints();
-    });
+    // const hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    // hKey.on('down', (_:KeyboardEvent) => {
+    //   if (!hintButton.isDisabled) this.showHints();
+    // });
 
-    this.input.on('pointerdown', (_:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
+    this.input.on('pointerup', (_:Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
       if(!gameObjects.includes(hintButton) && this._hintAnimationQueue.isProcessing)
       {
         this._hintAnimationQueue.cancel();
@@ -196,15 +200,15 @@ export default class MainScene extends Phaser.Scene
       scene: this,
       x: 337,
       y: 520,
-      label: 'Menu(M)'
+      label: 'Menu'
     });
-    menuButton.on('pointerdown', () => this.showMenu());
+    menuButton.on('pointerup', () => this.showMenu());
     this.children.add(menuButton);
 
-    const mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-    mKey.on('up', (_:KeyboardEvent) => {
-      this.showMenu();
-    });
+    // const mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+    // mKey.on('up', (_:KeyboardEvent) => {
+    //   this.showMenu();
+    // });
   }
 
   onCardPointerOver ({cardGameObject}:{cardGameObject:CardGameObject})
@@ -240,7 +244,7 @@ export default class MainScene extends Phaser.Scene
     cardGameObject.removeHighlight();
   }
 
-  onCardPointerDown ({cardGameObject}:{cardGameObject:CardGameObject})
+  onCardPointerUp ({cardGameObject}:{cardGameObject:CardGameObject})
   {
     const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
     if (this._table.frontDrawPile && !this._cardAnimationQueue.isProcessing)
@@ -277,8 +281,8 @@ export default class MainScene extends Phaser.Scene
         dragPileGameObject.placeCardGameObjects({cardGameObjects: fromPileGameObject.drawFrontCardGameObjects({size})});
         this._cardAnimationQueue.add(async () => {
           await Promise.all([
-            dragPileGameObject.adjustCardGameObjectPositionsWithAnimation(),
-            dragPileGameObject.expandWithAnimation()
+            dragPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration),
+            dragPileGameObject.expandWithAnimation(this._cardMoveDuration)
           ])
         });
       }
@@ -330,7 +334,7 @@ export default class MainScene extends Phaser.Scene
         dragPileGameObject.setActive(false);
       } else {
         this._cardAnimationQueue.add(async () => {
-          await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
+          await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration);
           dragPileGameObject.setActive(false);
         });
       }
@@ -348,8 +352,9 @@ export default class MainScene extends Phaser.Scene
       const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.name);
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
+      this._tableGameObject.bringToTop(fromPileGameObject);
       this._cardAnimationQueue.add(async () => {
-        await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
+        await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration);
         dragPileGameObject.setActive(false);
       });
     }
@@ -364,8 +369,8 @@ export default class MainScene extends Phaser.Scene
       toPileGameObject.placeCardGameObjects({cardGameObjects});
       this._tableGameObject.bringToTop(toPileGameObject);
       await Promise.all([
-        toPileGameObject.adjustCardGameObjectPositionsWithAnimation(),
-        fromPileGameObject.adjustCardGameObjectPositionsWithAnimation()
+        toPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration),
+        fromPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration)
       ]);
     });
 
@@ -380,7 +385,7 @@ export default class MainScene extends Phaser.Scene
   onFlipOverCard ({card}:{card:Card}) {
     const cardGarmObject = this._tableGameObject.cardGameObjects.find(c => c.name === card.id);
     if (cardGarmObject) {
-      this._cardAnimationQueue.add(() => cardGarmObject.flipOver(card.isFaceUp));
+      this._cardAnimationQueue.add(() => cardGarmObject.flipOver(card.isFaceUp, this._cardFlipDuration));
     };
   }
 

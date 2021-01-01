@@ -8,7 +8,7 @@ test('Table settings', () => {
     numberOfTableauPiles: 10,
     numberOfDrawPiles: 5,
     cards: createCards({
-      numberOfDecksUsed: 2,
+      numberOfSuitStacks: 8,
       numberOfSuits: 4
     })
   });
@@ -24,7 +24,7 @@ test('Table startGame', () => {
     numberOfTableauPiles: 10,
     numberOfDrawPiles: 5,
     cards: createCards({
-      numberOfDecksUsed: 2,
+      numberOfSuitStacks: 8,
       numberOfSuits: 4
     })
   });
@@ -65,7 +65,7 @@ test('Table dealCardsFromDrawPile', () => {
     numberOfTableauPiles: 10,
     numberOfDrawPiles: 5,
     cards: createCards({
-      numberOfDecksUsed: 2,
+      numberOfSuitStacks: 8,
       numberOfSuits: 4
     })
   });
@@ -292,6 +292,17 @@ test('Table undo deck card dealing', () => {
   expect(table.drawPiles[1].cards.length).toBe(2);
   expect(table.tableauPiles[0].cards.length).toBe(24);
   expect(table.tableauPiles[1].cards.length).toBe(24);
+
+  table.dealCardsFromDrawPile();
+  table.dealCardsFromDrawPile();
+  table.undo();
+  table.dealCardsFromDrawPile();
+  table.undo();
+
+  expect(table.drawPiles[0].cards.length).toBe(2);
+  expect(table.drawPiles[1].cards.length).toBe(0);
+  expect(table.tableauPiles[0].cards.length).toBe(25);
+  expect(table.tableauPiles[1].cards.length).toBe(25);
 });
 
 

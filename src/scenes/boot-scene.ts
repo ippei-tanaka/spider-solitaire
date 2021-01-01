@@ -38,7 +38,7 @@ export default class BootScene extends Phaser.Scene
       this,
       0,
       0,
-      'Spider Spider Solitaire',
+      'Spider Solitaire',
       {
         fontSize: "50px",
         color: '#000000',
@@ -53,11 +53,11 @@ export default class BootScene extends Phaser.Scene
       scene: this,
       x: 0,
       y: 0,
-      label: 'One Suit'
+      label: '1 Suit'
     });
     oneSuitButton.x = stageWidth / 2 - oneSuitButton.width / 2 - 100;
     oneSuitButton.y = stageHeight / 2 - oneSuitButton.height / 2 + 120;
-    oneSuitButton.on('pointerdown', () => {
+    oneSuitButton.on('pointerup', () => {
       localStorage.setItem('game-mode', 'one-suits');
       this.scene.start('main');
     });
@@ -67,11 +67,11 @@ export default class BootScene extends Phaser.Scene
       scene: this,
       x: 0,
       y: 0,
-      label: 'Two Suits'
+      label: '2 Suits'
     });
     twoSuitButton.x = stageWidth / 2 - twoSuitButton.width / 2 + 100;
-    twoSuitButton.y = stageHeight / 2 - twoSuitButton.height / 2 + 120;
-    twoSuitButton.on('pointerdown', () => {
+    twoSuitButton.y = stageHeight / 2 - twoSuitButton.height / 2 + 30;
+    twoSuitButton.on('pointerup', () => {
       localStorage.setItem('game-mode', 'two-suits');
       this.scene.start('main');
     });
@@ -81,28 +81,28 @@ export default class BootScene extends Phaser.Scene
       scene: this,
       x: 0,
       y: 0,
-      label: 'Four Suits'
+      label: '4 Suits'
     });
     fourSuitButton.x = stageWidth / 2 - fourSuitButton.width / 2 - 100;
     fourSuitButton.y = stageHeight / 2 - fourSuitButton.height / 2 + 30;
-    fourSuitButton.on('pointerdown', () => {
+    fourSuitButton.on('pointerup', () => {
       localStorage.setItem('game-mode', 'four-suits');
       this.scene.start('main');
     });
     this.children.add(fourSuitButton);
 
-    // const fiveSuitButton = new Button({
-    //   scene: this,
-    //   x: 0,
-    //   y: 0,
-    //   label: 'Five Suit'
-    // });
-    // fiveSuitButton.x = stageWidth / 2 - fiveSuitButton.width / 2 + 100;
-    // fiveSuitButton.y = stageHeight / 2 - fiveSuitButton.height / 2 + 30;
-    // fiveSuitButton.on('pointerdown', () => {
-    //   localStorage.setItem('game-mode', 'five-suits');
-    //   this.scene.start('main');
-    // });
-    // this.children.add(fiveSuitButton);
+    const fiveSuitButton = new Button({
+      scene: this,
+      x: 0,
+      y: 0,
+      label: '5 Suits'
+    });
+    fiveSuitButton.x = stageWidth / 2 - fiveSuitButton.width / 2 + 100;
+    fiveSuitButton.y = stageHeight / 2 - fiveSuitButton.height / 2 + 120;
+    fiveSuitButton.on('pointerup', () => {
+      localStorage.setItem('game-mode', 'five-suits');
+      this.scene.start('main');
+    });
+    this.children.add(fiveSuitButton);
   }
 }
