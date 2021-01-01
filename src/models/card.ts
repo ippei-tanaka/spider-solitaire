@@ -1,4 +1,3 @@
-import {nanoid} from 'nanoid';
 import {Emitter} from '../event-emitter';
 
 export enum Suit {
@@ -52,7 +51,7 @@ export class Card
   {
     this._suit = suit;
     this._isFaceUp = isFaceUp || false;
-    this._id = id || nanoid();
+    this._id = id || rank + Date.now() + '';
 
     if (1 <= rank && rank <= 13) {
       this._rank = rank;
