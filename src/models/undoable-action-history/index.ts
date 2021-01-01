@@ -4,6 +4,7 @@ import {Emitter} from '../../event-emitter';
 
 export const FACE_UP_CARD = 'FACE_UP_CARD';
 export const MOVE_CARD = 'MOVE_CARD';
+export const MOVE_CARD_BETWEEN_TABLEAU_PILES = 'MOVE_CARD_BETWEEN_TABLEAU_PILES';
 export const PAUSE = 'PAUSE';
 
 interface FaceUpAction {
@@ -18,6 +19,13 @@ interface MoveCardAction {
   size:number
 }
 
+interface MoveCardBetweenTableauPilesAction {
+  type: typeof MOVE_CARD_BETWEEN_TABLEAU_PILES,
+  from:Pile,
+  to:Pile,
+  size:number
+}
+
 interface PauseAction {
   type: typeof PAUSE
 }
@@ -27,7 +35,7 @@ type UndoableActionHistoryEvents = {
   REMOVE: UndoableAction
 };
 
-export type UndoableAction = FaceUpAction | MoveCardAction | PauseAction;
+export type UndoableAction = FaceUpAction | MoveCardAction | PauseAction | MoveCardBetweenTableauPilesAction;
 
 export class UndoableActionHistory
 {

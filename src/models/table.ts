@@ -3,6 +3,7 @@ import {Pile} from './pile';
 import {
   FACE_UP_CARD,
   MOVE_CARD,
+  MOVE_CARD_BETWEEN_TABLEAU_PILES,
   PAUSE,
   UndoableActionHistory
 } from './undoable-action-history';
@@ -216,33 +217,10 @@ export class Table
 
   moveCardBetweenTableauPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
   {
-    if (!this._tableauPiles.find(p => p === from))
-    {
-      throw new Error(`The "from" pile is not a tableau pile.`);
-    }
-
-    if (!this._tableauPiles.find(p => p === to))
-    {
-      throw new Error(`The "to" pile is not a tableau pile.`);
-    }
-
-    const cards = from.getFrontCards({size});
-    if (cards.length !== size)
-    {
-      throw new Error(`The pile "${from.name}" doesn't have ${size} cards to draw.`);
-    }
-
-    if (to.frontCard && !Pile.checkIfCardsAreDescending({
-      cards: [to.frontCard, ...cards],
-      inSuit: false,
-      faceUp: true
-    }))
-    {
-      throw new Error(`You can't place those cards to the "to" pile.`);
-    }
+    this._checkIfMovingCardTableauPilesIsValid({from, to, size});
 
     this._moveCardBetweenPiles({from, to, size});
-    this._actionHistory.add({from, to, size, type: MOVE_CARD});
+    this._actionHistory.add({from, to, size, type: MOVE_CARD_BETWEEN_TABLEAU_PILES});
 
     if (from.frontCard && !from.frontCard.isFaceUp) {
       this._faceUpCard({card: from.frontCard});
@@ -280,6 +258,34 @@ export class Table
     }
 
     this._actionHistory.add({type: PAUSE});
+  }
+
+  private _checkIfMovingCardTableauPilesIsValid ({from, to, size}:{from:Pile, to:Pile, size:number})
+  {
+    if (!this._tableauPiles.find(p => p === from))
+    {
+      throw new Error(`The "from" pile is not a tableau pile.`);
+    }
+
+    if (!this._tableauPiles.find(p => p === to))
+    {
+      throw new Error(`The "to" pile is not a tableau pile.`);
+    }
+
+    const cards = from.getFrontCards({size});
+    if (cards.length !== size)
+    {
+      throw new Error(`The pile "${from.name}" doesn't have ${size} cards to draw.`);
+    }
+
+    if (to.frontCard && !Pile.checkIfCardsAreDescending({
+      cards: [to.frontCard, ...cards],
+      inSuit: false,
+      faceUp: true
+    }))
+    {
+      throw new Error(`You can't place those cards to the "to" pile.`);
+    }
   }
 
   get frontDrawPile ()
@@ -367,6 +373,7 @@ export class Table
           this._actionHistory.remove();
           break;
         case MOVE_CARD:
+        case MOVE_CARD_BETWEEN_TABLEAU_PILES:
           this._moveCardBetweenPiles({
             from: action.to,
             to: action.from,
@@ -439,6 +446,24 @@ export class Table
           });
           break;
         case MOVE_CARD:
+          this._moveCardBetweenPiles({
+            from: action.from,
+            to: action.to,
+            size: action.size
+          });
+          this._actionHistory.add({
+            from: action.from,
+            to: action.to,
+            size: action.size,
+            type: MOVE_CARD
+          });
+          break;
+        case MOVE_CARD_BETWEEN_TABLEAU_PILES:
+          this._checkIfMovingCardTableauPilesIsValid({
+            from: action.from,
+            to: action.to,
+            size: action.size
+          });
           this._moveCardBetweenPiles({
             from: action.from,
             to: action.to,

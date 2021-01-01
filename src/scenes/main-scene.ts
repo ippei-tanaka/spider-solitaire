@@ -55,15 +55,21 @@ export default class MainScene extends Phaser.Scene
   create ()
   {
     const gameMode = gameModes[localStorage.getItem('game-mode') || ''];
-    const actions = JSON.parse(localStorage.getItem('actions') || '[]') as SimplifiedUndoableAction[];
-    const seed = localStorage.getItem('seed');
-
     if (!gameMode)
     {
-      this.scene.start('boot');
+      this.redirectToBoot();
       return;
     }
 
+    let actions:SimplifiedUndoableAction[] = [];
+    try {
+      actions = JSON.parse(localStorage.getItem('actions') || '[]') as SimplifiedUndoableAction[];
+    } catch (e)
+    {
+      actions = [];
+    }
+
+    const seed = localStorage.getItem('seed');
     if (seed) {
       this._RND.state(seed);
     } else {
@@ -134,7 +140,12 @@ export default class MainScene extends Phaser.Scene
 
     if (seed && actions.length > 0) {
       this._table.dealInitialCards();
-      this._table.reproduce(actions);
+      try {
+        this._table.reproduce(actions);
+      } catch (e) {
+        this.redirectToBoot();
+        return;
+      }
       syncTableAndTableGameObject();
       this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
       this._table.cards.forEach(card => {
@@ -495,4 +506,11 @@ export default class MainScene extends Phaser.Scene
     this.scene.launch('menu');
   }
 
+  redirectToBoot ()
+  {
+    localStorage.removeItem('game-mode');
+    localStorage.removeItem('seed');
+    localStorage.removeItem('actions');
+    this.scene.start('boot');
+  }
 }

@@ -1,6 +1,7 @@
 import {
   FACE_UP_CARD,
   MOVE_CARD,
+  MOVE_CARD_BETWEEN_TABLEAU_PILES,
   PAUSE,
   UndoableAction
 } from './';
@@ -26,6 +27,13 @@ export const simplify = (action:UndoableAction):SimplifiedUndoableAction => {
     case MOVE_CARD:
       return {
         t: "M",
+        f: action.from.name,
+        o: action.to.name,
+        s: action.size + '',
+      };
+    case MOVE_CARD_BETWEEN_TABLEAU_PILES:
+      return {
+        t: "T",
         f: action.from.name,
         o: action.to.name,
         s: action.size + '',
@@ -56,6 +64,13 @@ export const recover = ({
     case "M":
       return {
         type: MOVE_CARD,
+        from: pileFinder(action.f || ''),
+        to: pileFinder(action.o || ''),
+        size: parseInt(action.s || ''),
+      };
+    case "T":
+      return {
+        type: MOVE_CARD_BETWEEN_TABLEAU_PILES,
         from: pileFinder(action.f || ''),
         to: pileFinder(action.o || ''),
         size: parseInt(action.s || ''),
