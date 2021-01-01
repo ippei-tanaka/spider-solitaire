@@ -31,6 +31,8 @@ module.exports = {
     path: NODE_MODE === "development"
       ? path.resolve(__dirname, 'dist')
       : path.resolve(__dirname, 'docs'),
+    chunkFilename: '[name].js',
+    publicPath: "/",
   },
 
   devServer: NODE_MODE === "development" ? {
@@ -49,15 +51,38 @@ module.exports = {
     }),
   ],
 
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        commons: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
-    }
-  }
+  // optimization: {
+  //   splitChunks: {
+  //       cacheGroups: {
+  //           default: false,
+  //           vendors: false,
+  //           // vendor chunk
+  //           vendor: {
+  //               // name of the chunk
+  //               name: 'vendor',
+  //
+  //               // async + async chunks
+  //               chunks: 'all',
+  //
+  //               // import file path containing node_modules
+  //               test: /node_modules/,
+  //
+  //               // priority
+  //               priority: 20
+  //           },
+  //       }
+  //   }
+  // }
+
+  // optimization: {
+  //   splitChunks: {
+  //     cacheGroups: {
+  //       commons: {
+  //         test: /[\\/]node_modules[\\/]/,
+  //         name: 'vendors',
+  //         chunks: 'all'
+  //       }
+  //     }
+  //   }
+  // }
 };
