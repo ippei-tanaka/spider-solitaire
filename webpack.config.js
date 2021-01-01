@@ -37,7 +37,9 @@ module.exports = {
       ? path.resolve(__dirname, 'dist')
       : path.resolve(__dirname, 'docs'),
     chunkFilename: `[name]-${VERSION}.js`,
-    publicPath: "/",
+    publicPath: NODE_MODE === "development"
+      ? "/"
+      : '/spider-solitaire/',
   },
 
   devServer: NODE_MODE === "development" ? {
