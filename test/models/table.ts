@@ -31,7 +31,7 @@ test('Table startGame', () => {
 
   expect(table.deckPile.cards.length).toBe(104);
 
-  table.startGame();
+  table.dealInitialCards();
 
   expect(table.deckPile.cards.length).toBe(0);
   expect(table.tableauPiles[0].cards.length).toBe(6);
@@ -70,7 +70,7 @@ test('Table dealCardsFromDrawPile', () => {
     })
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   table.dealCardsFromDrawPile();
 
@@ -103,7 +103,7 @@ test('Table moveCardBetweenTableauPiles', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   expect(table.tableauPiles[0].cards.length).toBe(6);
   expect(table.tableauPiles[1].cards.length).toBe(6);
@@ -131,7 +131,7 @@ test('Table moveCardBetweenTableauPiles and complete a suit', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   table.tableauPiles[0].drawCards({size: table.tableauPiles[0].cards.length});
   table.tableauPiles[1].drawCards({size: table.tableauPiles[1].cards.length});
@@ -207,7 +207,7 @@ test('Table undo move card actions', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   expect(table.tableauPiles[0].cards.length).toBe(17);
   expect(table.tableauPiles[1].cards.length).toBe(16);
@@ -258,7 +258,7 @@ test('Table undo deck card dealing', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   expect(table.drawPiles[0].cards.length).toBe(2);
   expect(table.drawPiles[1].cards.length).toBe(2);
@@ -317,7 +317,7 @@ test('Table undo completion of cards', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   table.tableauPiles[0].drawCards({size: table.tableauPiles[0].cards.length});
   table.tableauPiles[1].drawCards({size: table.tableauPiles[1].cards.length});
@@ -373,7 +373,7 @@ test('Table complete a suit and win the game', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   expect(table.isClear).toBe(false);
 
@@ -425,7 +425,7 @@ test('Table hints', () => {
     }))
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   table.tableauPiles[0].drawCards({size: table.tableauPiles[0].cards.length});
   table.tableauPiles[1].drawCards({size: table.tableauPiles[1].cards.length});
@@ -528,7 +528,7 @@ test('Table save steps and recover it', () => {
     cards: [...cards]
   });
 
-  table.startGame();
+  table.dealInitialCards();
 
   table.moveCardBetweenTableauPiles({
     from: table.tableauPiles[0],
@@ -578,7 +578,7 @@ test('Table save steps and recover it', () => {
     cards: [...cards]
   });
 
-  table2.startGame();
+  table2.dealInitialCards();
 
   table2.reproduce(table.simplifiedUndoableActions);
 
