@@ -207,7 +207,7 @@ export class Table
     }
   }
 
-  startGame ()
+  dealInitialCards ()
   {
     this._dealCardsFromDeckToTableauPiles();
     this._dealCardsFromDeckToDrawPiles();

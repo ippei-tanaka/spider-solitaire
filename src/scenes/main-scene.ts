@@ -8,6 +8,9 @@ import {Table} from '../models/table';
 import {createCards} from '../models/create-cards';
 import {JobQueue} from '../job-queue';
 import {gameModes} from '../models/game-modes';
+import {
+  SimplifiedUndoableAction,
+} from '../models/undoable-action-history/simplified-action'
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
@@ -51,21 +54,25 @@ export default class MainScene extends Phaser.Scene
 
   create ()
   {
-    const gameModeKey = localStorage.getItem('game-mode');
-    if (!gameModeKey || !gameModes[gameModeKey])
+    const gameMode = gameModes[localStorage.getItem('game-mode') || ''];
+    const actions = JSON.parse(localStorage.getItem('actions') || '[]') as SimplifiedUndoableAction[];
+    const seed = localStorage.getItem('seed');
+
+    if (!gameMode)
     {
       this.scene.start('boot');
       return;
     }
 
-    const gameMode = gameModes[gameModeKey]
-
-    const seed = localStorage.getItem('seed');
     if (seed) {
       this._RND.state(seed);
     } else {
       localStorage.setItem('seed', this._RND.state());
     }
+
+    this.__cardAnimationQueue = new JobQueue<void>();
+
+    this.__hintAnimationQueue = new JobQueue<void>();
 
     this.__table = new Table({
       numberOfTableauPiles: gameMode.numberOfTableauPiles,
@@ -79,9 +86,6 @@ export default class MainScene extends Phaser.Scene
           isFaceUp,
           id: this._RND.uuid()
         })
-      }).map(card => {
-        card.onFlipOver(this.onFlipOverCard.bind(this))
-        return card;
       }))
     });
 
@@ -92,31 +96,62 @@ export default class MainScene extends Phaser.Scene
       tableauPilesNames: this._table.tableauPiles.map(p => p.name),
       discardPilesNames: this._table.discardPiles.map(p => p.name),
       dragPileName: "drag",
-      hintPileName: "hint",
-      cardGameObjects: this._table.cards.map(card => {
-        const cardGameObject = new CardGameObject({
-          scene: this,
-          x: 0,
-          y: 0,
-          suit: card.suit,
-          rank: card.rank,
-          name: card.id
-        });
-        cardGameObject.on("pointerover", (pointer:Pointer) => this.onCardPointerOver.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("pointerout", (pointer:Pointer) => this.onCardPointerOut.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("pointerup", (pointer:Pointer) => this.onCardPointerUp.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("dragstart", (pointer:Pointer) => this.onCardDragStart.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("drag", (pointer:Pointer) => this.onCardDrag.call(this, {cardGameObject, pointer}));
-        cardGameObject.on("drop", (pointer:Pointer, zone:Zone) => this.onCardDrop.call(this, {cardGameObject, pointer, zone}));
-        cardGameObject.on("dragend", (pointer:Pointer) => this.onCardDragEnd.call(this, {cardGameObject, pointer}));
-        return cardGameObject;
-      })
+      hintPileName: "hint"
     });
 
     this.children.add(this._tableGameObject);
 
-    this.__cardAnimationQueue = new JobQueue<void>();
-    this.__hintAnimationQueue = new JobQueue<void>();
+    const cardGameObjects = this._table.cards.map(card => {
+      const cardGameObject = new CardGameObject({
+        scene: this,
+        x: 0,
+        y: 0,
+        suit: card.suit,
+        rank: card.rank,
+        name: card.id
+      });
+      cardGameObject.on("pointerover", (pointer:Pointer) => this.onCardPointerOver.call(this, {cardGameObject, pointer}));
+      cardGameObject.on("pointerout", (pointer:Pointer) => this.onCardPointerOut.call(this, {cardGameObject, pointer}));
+      cardGameObject.on("pointerup", (pointer:Pointer) => this.onCardPointerUp.call(this, {cardGameObject, pointer}));
+      cardGameObject.on("dragstart", (pointer:Pointer) => this.onCardDragStart.call(this, {cardGameObject, pointer}));
+      cardGameObject.on("drag", (pointer:Pointer) => this.onCardDrag.call(this, {cardGameObject, pointer}));
+      cardGameObject.on("drop", (pointer:Pointer, zone:Zone) => this.onCardDrop.call(this, {cardGameObject, pointer, zone}));
+      cardGameObject.on("dragend", (pointer:Pointer) => this.onCardDragEnd.call(this, {cardGameObject, pointer}));
+      return cardGameObject;
+    });
+
+    const syncTableAndTableGameObject = () => this._table.piles.forEach(pile => {
+      const pileGameObject = this._tableGameObject.getPileGameObjectByName(pile.name);
+      const _cardGameObjects = pile.cards.map(card => {
+        const cardGameObject = cardGameObjects.find(c => c.name === card.id);
+        if (!cardGameObject) throw new Error("The card doesn't exist.");
+        cardGameObject.flipOver(card.isFaceUp);
+        return cardGameObject;
+      });
+      pileGameObject.placeCardGameObjects({cardGameObjects: _cardGameObjects});
+      pileGameObject.adjustCardGameObjectPositions();
+    });
+
+    if (seed && actions.length > 0) {
+      this._table.dealInitialCards();
+      this._table.reproduce(actions);
+      syncTableAndTableGameObject();
+      this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
+      this._table.cards.forEach(card => {
+        card.onFlipOver(this.onFlipOverCard.bind(this));
+      });
+    } else {
+      syncTableAndTableGameObject();
+      this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
+      this._table.cards.forEach(card => {
+        card.onFlipOver(this.onFlipOverCard.bind(this));
+      });
+      this._table.dealInitialCards();
+    }
+
+    this._table.onActionHappen(() => {
+      localStorage.setItem('actions', JSON.stringify(this._table.simplifiedUndoableActions));
+    });
 
     const undoButton = new Button({
       scene: this,
@@ -178,18 +213,11 @@ export default class MainScene extends Phaser.Scene
       }
     });
 
-    this._table.onMoveCardsBetweenPiles(this.onMoveCardsBetweenPiles.bind(this));
 
-    this._table.onActionHappen(() => {
-      localStorage.setItem('actions', JSON.stringify(this._table.simplifiedUndoableActions));
-    });
-
-    this._table.startGame();
-
-    const actions = localStorage.getItem('actions');
-    if (seed && actions) {
-      this._table.reproduce(JSON.parse(actions));
-    }
+    // const actions = localStorage.getItem('actions');
+    // if (seed && actions) {
+    //   this._table.reproduce(JSON.parse(actions));
+    // }
 
     // const dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     // dKey.on('up', (_:KeyboardEvent) => {
@@ -216,10 +244,12 @@ export default class MainScene extends Phaser.Scene
     if (!this._cardAnimationQueue.isProcessing)
     {
       const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
+      console.log(targetPileGameObject);
 
       if (cardGameObject.isFaceUp
         && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject))
       {
+
         const targetPile = this._table.getPileByCardId(cardGameObject.name);
         const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(targetPile.name);
         const size = fromPileGameObject.cardGameObjects.length - fromPileGameObject.cardGameObjects.indexOf(cardGameObject);
@@ -383,9 +413,10 @@ export default class MainScene extends Phaser.Scene
   }
 
   onFlipOverCard ({card}:{card:Card}) {
-    const cardGarmObject = this._tableGameObject.cardGameObjects.find(c => c.name === card.id);
-    if (cardGarmObject) {
-      this._cardAnimationQueue.add(() => cardGarmObject.flipOver(card.isFaceUp, this._cardFlipDuration));
+    const pileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(card.id);
+    const cardGameObject = pileGameObject.cardGameObjects.find(c => c.name === card.id);
+    if (cardGameObject) {
+      this._cardAnimationQueue.add(() => cardGameObject.flipOverWithAnimation(card.isFaceUp, this._cardFlipDuration));
     };
   }
 

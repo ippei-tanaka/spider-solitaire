@@ -174,7 +174,7 @@ export class CardGameObject extends Container
     this.setInteractive({draggable: true});
   }
 
-  flipOver (up:boolean, duration:number) {
+  flipOverWithAnimation (up:boolean, duration:number) {
     return new Promise<void>(resolve => {
       const timeline = this.scene.tweens.createTimeline();
       timeline.add({
@@ -199,6 +199,10 @@ export class CardGameObject extends Container
       });
       timeline.play();
     });
+  }
+
+  flipOver (up:boolean) {
+    this.back.visible = !up;
   }
 
   get isFaceUp ()

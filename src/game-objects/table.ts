@@ -14,12 +14,12 @@ export type TableGameObjectSettings = {
   discardPilesNames:string[],
   dragPileName:string,
   hintPileName:string,
-  cardGameObjects: CardGameObject[]
+  // cardGameObjects: CardGameObject[]
 };
 
 export class TableGameObject extends Phaser.GameObjects.Container
 {
-  private _cardGameObjects:CardGameObject[] = [];
+  // private _cardGameObjects:CardGameObject[] = [];
   private _pileGameObjects:PileGameObject[] = [];
   private _deckPileGameObject:PileGameObject;
   private _drawPileGameObjects:PileGameObject[] = [];
@@ -36,12 +36,12 @@ export class TableGameObject extends Phaser.GameObjects.Container
     discardPilesNames,
     dragPileName,
     hintPileName,
-    cardGameObjects
+    // cardGameObjects
   }:TableGameObjectSettings)
   {
     super(scene, 0, 0);
 
-    this._cardGameObjects = cardGameObjects;
+    // this._cardGameObjects = cardGameObjects;
 
     const _deckPile = new PileGameObject({
       scene: this.scene,
@@ -51,7 +51,7 @@ export class TableGameObject extends Phaser.GameObjects.Container
     });
     this._pileGameObjects = [...this._pileGameObjects, _deckPile];
     this._deckPileGameObject = _deckPile;
-    this._deckPileGameObject.placeCardGameObjects({cardGameObjects});
+    // this._deckPileGameObject.placeCardGameObjects({cardGameObjects});
     this._deckPileGameObject.adjustCardGameObjectPositions();
     this.add(_deckPile);
 
@@ -131,10 +131,10 @@ export class TableGameObject extends Phaser.GameObjects.Container
     this.add(_hintPileGameObject);
   }
 
-  get cardGameObjects ()
-  {
-    return [...this._cardGameObjects];
-  }
+  // get cardGameObjects ()
+  // {
+  //   return [...this._cardGameObjects];
+  // }
 
   get pileGameObjects ()
   {
@@ -160,6 +160,21 @@ export class TableGameObject extends Phaser.GameObjects.Container
   {
     return this.getPileGameObjectBy(p => p.cardGameObjects.find(c => c.name === name));
   }
+
+  // getCardGameObjectBy (predicate:(c:CardGameObject) => boolean)
+  // {
+  //   const card = this._cardGameObjects.find(predicate);
+  //   if (!card)
+  //   {
+  //     throw new Error("The card game object doesn't exist.");
+  //   }
+  //   return card;
+  // }
+  //
+  // getCardGameObjectByName (name:string)
+  // {
+  //   return this.getCardGameObjectBy(c => c.name === name);
+  // }
 
   get deckPileGameObject ()
   {
