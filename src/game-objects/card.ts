@@ -174,7 +174,7 @@ export class CardGameObject extends Container
     this.setInteractive({draggable: true});
   }
 
-  flipOver (up:boolean) {
+  flipOver (up:boolean, duration:number) {
     return new Promise<void>(resolve => {
       const timeline = this.scene.tweens.createTimeline();
       timeline.add({
@@ -182,7 +182,7 @@ export class CardGameObject extends Container
         props: {
           scaleX: 0,
         },
-        duration: 35,
+        duration: duration * 0.5,
         onComplete: () => {
           this.back.visible = !up;
         }
@@ -192,7 +192,7 @@ export class CardGameObject extends Container
         props: {
           scaleX: 1,
         },
-        duration: 35,
+        duration: duration * 0.5,
         onComplete: () => {
           resolve();
         }

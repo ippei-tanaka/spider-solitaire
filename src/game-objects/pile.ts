@@ -188,7 +188,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
     return positions;
   }
 
-  async adjustCardGameObjectPositionsWithAnimation ()
+  async adjustCardGameObjectPositionsWithAnimation (duration: number)
   {
     const positions = this._getAdjustedCardGameObjectPositions();
     await Promise.all(positions
@@ -200,7 +200,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
             x: position.x,
             y: position.y
           },
-          duration: 80,
+          duration,
           onComplete: () => res()
         });
     })))
@@ -218,7 +218,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
     this.resizeZone();
   }
 
-  async expandWithAnimation ()
+  async expandWithAnimation (duration:number)
   {
     await new Promise(resolve => {
       this.scaleX = 1;
@@ -229,7 +229,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
           scaleX: 1.1,
           scaleY: 1.1
         },
-        duration: 70,
+        duration,
         onComplete: () => resolve()
       });
     });

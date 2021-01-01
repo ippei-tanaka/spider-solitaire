@@ -20,6 +20,10 @@ export default class MainScene extends Phaser.Scene
   private __cardAnimationQueue:JobQueue<void> | undefined;
   private __hintAnimationQueue:JobQueue<void> | undefined;
   private _RND: RandomDataGenerator = new Phaser.Math.RandomDataGenerator();
+  private static readonly CARD_MOVE_DURATION = 80;
+  private _cardMoveDuration = MainScene.CARD_MOVE_DURATION;
+  private static readonly CARD_FLIP_DURATION = 80;
+  private _cardFlipDuration = MainScene.CARD_FLIP_DURATION;
 
   constructor () {
     super('main');
@@ -277,8 +281,8 @@ export default class MainScene extends Phaser.Scene
         dragPileGameObject.placeCardGameObjects({cardGameObjects: fromPileGameObject.drawFrontCardGameObjects({size})});
         this._cardAnimationQueue.add(async () => {
           await Promise.all([
-            dragPileGameObject.adjustCardGameObjectPositionsWithAnimation(),
-            dragPileGameObject.expandWithAnimation()
+            dragPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration),
+            dragPileGameObject.expandWithAnimation(this._cardMoveDuration)
           ])
         });
       }
@@ -330,7 +334,7 @@ export default class MainScene extends Phaser.Scene
         dragPileGameObject.setActive(false);
       } else {
         this._cardAnimationQueue.add(async () => {
-          await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
+          await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration);
           dragPileGameObject.setActive(false);
         });
       }
@@ -350,7 +354,7 @@ export default class MainScene extends Phaser.Scene
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
       this._tableGameObject.bringToTop(fromPileGameObject);
       this._cardAnimationQueue.add(async () => {
-        await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
+        await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration);
         dragPileGameObject.setActive(false);
       });
     }
@@ -365,8 +369,8 @@ export default class MainScene extends Phaser.Scene
       toPileGameObject.placeCardGameObjects({cardGameObjects});
       this._tableGameObject.bringToTop(toPileGameObject);
       await Promise.all([
-        toPileGameObject.adjustCardGameObjectPositionsWithAnimation(),
-        fromPileGameObject.adjustCardGameObjectPositionsWithAnimation()
+        toPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration),
+        fromPileGameObject.adjustCardGameObjectPositionsWithAnimation(this._cardMoveDuration)
       ]);
     });
 
@@ -381,7 +385,7 @@ export default class MainScene extends Phaser.Scene
   onFlipOverCard ({card}:{card:Card}) {
     const cardGarmObject = this._tableGameObject.cardGameObjects.find(c => c.name === card.id);
     if (cardGarmObject) {
-      this._cardAnimationQueue.add(() => cardGarmObject.flipOver(card.isFaceUp));
+      this._cardAnimationQueue.add(() => cardGarmObject.flipOver(card.isFaceUp, this._cardFlipDuration));
     };
   }
 
