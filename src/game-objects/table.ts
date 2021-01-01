@@ -41,9 +41,6 @@ export class TableGameObject extends Phaser.GameObjects.Container
   {
     super(scene, 0, 0);
 
-    const stageWidth = this.scene.sys.game.canvas.width;
-    const stageHeight = this.scene.sys.game.canvas.height;
-
     this._cardGameObjects = cardGameObjects;
 
     const _deckPile = new PileGameObject({

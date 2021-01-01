@@ -91,6 +91,7 @@ export default class BootScene extends Phaser.Scene
     });
     this.children.add(fourSuitButton);
 
+    /*
     const fiveSuitButton = new Button({
       scene: this,
       x: 0,
@@ -104,5 +105,6 @@ export default class BootScene extends Phaser.Scene
       this.scene.start('main');
     });
     this.children.add(fiveSuitButton);
+    */
   }
 }
