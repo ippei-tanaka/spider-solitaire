@@ -1,30 +1,17 @@
 import Phaser from "phaser";
 import {TableGameObject} from '../game-objects/table';
-// import {PileGameObjectWithEvent as PileGameObject} from '../game-objects-with-events/pile';
 import {CardGameObject} from '../game-objects/card';
-// import {emitter as gameObjectEventEmitter} from '../game-objects-with-events/emitter';
 import {Button} from '../game-objects/button';
 import {Card} from '../models/card';
 import {Pile} from '../models/pile';
-// import {CardWithEvent} from '../models-with-events/card';
-// import {PileWithEvent} from '../models-with-events/pile';
 import {Table} from '../models/table';
-// import {Table} from '../models/table';
 import {createCards} from '../models/create-cards';
-// import {randomizeArray} from '../models/create-cards';
-// import {emitter as modelEventEmitter} from '../models-with-events/emitter';
 import {JobQueue} from '../job-queue';
-// import {debounce} from 'underscore';
 import {gameModes} from '../models/game-modes';
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
 type RandomDataGenerator = Phaser.Math.RandomDataGenerator;
-// const RND = new Phaser.Math.RandomDataGenerator();
-// console.log(RND.uuid().split('-'));
-// RND.init(RND.uuid().split('-'));
-
-
 
 export default class MainScene extends Phaser.Scene
 {
@@ -133,7 +120,11 @@ export default class MainScene extends Phaser.Scene
       y: 520,
       label: 'Undo'
     });
-    undoButton.on('pointerup', () => this._table.undo());
+    undoButton.on('pointerup', () => {
+      // console.log('before', this._table.actionHistory.actions.map(a => a.type));
+      this._table.undo()
+      // console.log('after', this._table.actionHistory.actions.map(a => a.type));
+    });
     this.children.add(undoButton);
     this._cardAnimationQueue.onQueueStart(() => undoButton.disable());
     this._cardAnimationQueue.onQueueEnd(() => undoButton.enable());

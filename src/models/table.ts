@@ -133,6 +133,11 @@ export class Table
     return !this._tableauPiles.find(p => p.cards.length > 0);
   }
 
+  get actionHistory ()
+  {
+    return this._actionHistory;
+  }
+
   get simplifiedUndoableActions ()
   {
     return this._simplifiedUndoableActions;
@@ -370,7 +375,6 @@ export class Table
           this._actionHistory.remove();
           break;
         case PAUSE:
-          this._actionHistory.remove();
           break loopExecuteUndoActions;
         default:
           break;
