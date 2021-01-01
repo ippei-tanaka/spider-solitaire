@@ -1,16 +1,21 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const HandlebarsPlugin = require("handlebars-webpack-plugin");
+const packageJson = require("./package.json");
 
+const VERSION = packageJson.version;
 const NODE_MODE = process.env.NODE_MODE === "development" ? "development" : "production";
 
 module.exports = {
+
   mode: NODE_MODE,
 
   entry: {
     app: './src/index.ts'
   },
 
-  devtool: 'inline-source-map',
+  devtool: NODE_MODE === "development"
+    ? 'inline-source-map' : undefined,
 
   module: {
     rules: [
@@ -27,11 +32,11 @@ module.exports = {
   },
 
   output: {
-    filename: '[name].js',
+    filename: `[name]-${VERSION}.js`,
     path: NODE_MODE === "development"
       ? path.resolve(__dirname, 'dist')
       : path.resolve(__dirname, 'docs'),
-    chunkFilename: '[name].js',
+    chunkFilename: `[name]-${VERSION}.js`,
     publicPath: "/",
   },
 
@@ -49,6 +54,15 @@ module.exports = {
     new CopyPlugin({
       patterns: ['assets'],
     }),
+    new HandlebarsPlugin({
+      entry: path.join(process.cwd(), "src", "index.hbs"),
+      output: path.join(
+        process.cwd(),
+        NODE_MODE === "development" ? 'dist' : 'docs',
+        "[name].html"
+      ),
+      data: {version: VERSION},
+    })
   ],
 
   // optimization: {
