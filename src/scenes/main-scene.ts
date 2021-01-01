@@ -348,6 +348,7 @@ export default class MainScene extends Phaser.Scene
       const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromPile.name);
       const cardGameObjects = dragPileGameObject.drawFrontCardGameObjects({size});
       fromPileGameObject.placeCardGameObjects({cardGameObjects});
+      this._tableGameObject.bringToTop(fromPileGameObject);
       this._cardAnimationQueue.add(async () => {
         await fromPileGameObject.adjustCardGameObjectPositionsWithAnimation();
         dragPileGameObject.setActive(false);
