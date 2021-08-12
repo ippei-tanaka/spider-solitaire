@@ -193,7 +193,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
     const positions = this._getAdjustedCardGameObjectPositions();
     await Promise.all(positions
       .filter(position => (position.x !== position.cardGameObject.x || position.y !== position.cardGameObject.y))
-      .map(position => new Promise(res => {
+      .map(position => new Promise<void>(res => {
         this.scene.tweens.add({
           targets: position.cardGameObject,
           props: {
@@ -220,7 +220,7 @@ export class PileGameObject extends Phaser.GameObjects.Container
 
   async expandWithAnimation (duration:number)
   {
-    await new Promise(resolve => {
+    await new Promise<void>(resolve => {
       this.scaleX = 1;
       this.scaleY = 1;
       this.scene.tweens.add({

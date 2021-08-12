@@ -468,7 +468,7 @@ export default class MainScene extends Phaser.Scene
         hintPileGameObject.setAlpha(0.8);
         this._tableGameObject.bringToTop(hintPileGameObject);
 
-        await new Promise(resolve => {
+        await new Promise<void>(resolve => {
           const tween = this.tweens.add({
             targets: hintPileGameObject,
             props: {
