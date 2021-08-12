@@ -47,7 +47,7 @@ module.exports = {
     writeToDisk: true,
     // compress: true,
     // publicPath: "/dist/",
-    host: "192.168.8.150",//"127.0.0.1",
+    // host: "192.168.8.150",//"127.0.0.1",
     // port: 8080,
     // open: true
   } : undefined,
