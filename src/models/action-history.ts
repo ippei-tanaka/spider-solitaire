@@ -1,3 +1,5 @@
+import {Emitter} from '../event-emitter';
+
 export const FACE_UP_CARD = 'FACE_UP_CARD';
 export const MOVE_CARD = 'MOVE_CARD';
 export const MOVE_CARD_BETWEEN_TABLEAU_PILES = 'MOVE_CARD_BETWEEN_TABLEAU_PILES';
@@ -26,12 +28,26 @@ interface PauseAction {
   type: typeof PAUSE
 }
 
-export type Action = FaceUpAction | MoveCardAction | PauseAction | MoveCardBetweenTableauPilesAction;
+type Action = FaceUpAction | MoveCardAction | PauseAction | MoveCardBetweenTableauPilesAction;
+
+type SerializedAction = {
+  type: string,
+  cardId?: string
+  fromId?: string,
+  toId?: string,
+  size?: string,
+};
+
+type ActionHistoryEvents = {
+  ADD: Action,
+  REMOVE: Action
+};
 
 export class ActionHistory
 {
   private _actions:Action[];
-
+  private _emitter:Emitter<ActionHistoryEvents> = new Emitter<ActionHistoryEvents>();
+  
   constructor (actions:Action[] = [])
   {
     this._actions = actions;
@@ -40,12 +56,20 @@ export class ActionHistory
   add (action:Action)
   {
     this._actions = [...this._actions, action];
+    this._emitter.emit('ADD', action);
   }
 
   remove ()
   {
     const action = this._actions.slice(-1)[0];
     this._actions = this._actions.slice(0, -1);
+    this._emitter.emit('REMOVE', action);
+  }
+
+  on (callback: (action:Action) => void)
+  {
+    this._emitter.on('ADD', callback);
+    this._emitter.on('REMOVE', callback);
   }
 
   get latest ()
@@ -60,18 +84,29 @@ export class ActionHistory
 
   static serialize (history: ActionHistory)
   {
-    return JSON.stringify(history.actions);
+    try {
+      return JSON.stringify(history.actions);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
 
   static deserialize (actionString:string)
   {
-    const objects = JSON.parse(actionString) as {
-      type: string,
-      cardId?: string
-      fromId?: string,
-      toId?: string,
-      size?: string,
-    }[];
+    if (!actionString)
+    {
+      return null;
+    }
+
+    let objects: SerializedAction[] = [];
+    try {
+      objects = JSON.parse(actionString) as SerializedAction[];
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+
     const actions = objects.map<Action>(object => {
       switch (object.type)
       {

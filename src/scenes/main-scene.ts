@@ -59,13 +59,6 @@ export default class MainScene extends Phaser.Scene
       return;
     }
 
-    let history:ActionHistory|null = null;
-    try {
-      history = ActionHistory.deserialize(localStorage.getItem('actions') || '[]');
-    } catch (e) {
-      console.error(e);
-    }
-
     const seed = localStorage.getItem('seed');
     if (seed) {
       this._RND.state(seed);
@@ -89,7 +82,8 @@ export default class MainScene extends Phaser.Scene
           isFaceUp,
           id: this._RND.uuid()
         })
-      }))
+      })),
+      actionHistory: ActionHistory.deserialize(localStorage.getItem('actions') || '') || undefined
     });
 
     this.__tableGameObject = new TableGameObject({
@@ -135,10 +129,9 @@ export default class MainScene extends Phaser.Scene
       pileGameObject.adjustCardGameObjectPositions();
     });
 
-    if (seed && history && history.actions.length > 0) {
-      this._table.dealInitialCards();
+    if (seed && this._table.actionHistory.actions.length > 0) {
       try {
-        this._table.reproduce(history.actions);
+        this._table.setUpInitialCards();
       } catch (e) {
         this.redirectToBoot();
         return;
@@ -154,11 +147,14 @@ export default class MainScene extends Phaser.Scene
       this._table.cards.forEach(card => {
         card.onFlipOver(this.onFlipOverCard.bind(this));
       });
-      this._table.dealInitialCards();
+      this._table.setUpInitialCards();
     }
 
-    this._table.onActionHappen(() => {
-      localStorage.setItem('actions', ActionHistory.serialize(this._table.actionHistory));
+    this._table.actionHistory.on(() => {
+      const serializedActions = ActionHistory.serialize(this._table.actionHistory);
+      if (serializedActions) {
+        localStorage.setItem('actions', serializedActions);
+      }
     });
 
     const undoButton = new Button({
@@ -187,7 +183,7 @@ export default class MainScene extends Phaser.Scene
     this._hintAnimationQueue.onQueueEnd(updateUnduButtonDisablity);
     this._hintAnimationQueue.onQueueCancel(updateUnduButtonDisablity);
     updateUnduButtonDisablity();
-    this._table.onActionHappen(updateUnduButtonDisablity);
+    this._table.actionHistory.on(updateUnduButtonDisablity);
 
     // const uKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
     // uKey.on('down', (_:KeyboardEvent) => {
@@ -252,7 +248,6 @@ export default class MainScene extends Phaser.Scene
     if (!this._cardAnimationQueue.isProcessing)
     {
       const targetPileGameObject = this._tableGameObject.getPileGameObjectByCardGameObjectName(cardGameObject.name);
-      console.log(targetPileGameObject);
 
       if (cardGameObject.isFaceUp
         && this._tableGameObject.tableauPileGameObjects.includes(targetPileGameObject))

@@ -30,7 +30,7 @@ test('Table startGame', () => {
 
   expect(table.deckPile.cards.length).toBe(104);
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   expect(table.deckPile.cards.length).toBe(0);
   expect(table.tableauPiles[0].cards.length).toBe(6);
@@ -69,7 +69,7 @@ test('Table dealCardsFromDrawPile', () => {
     })
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   table.dealCardsFromDrawPile();
 
@@ -102,7 +102,7 @@ test('Table moveCardBetweenTableauPiles', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   expect(table.tableauPiles[0].cards.length).toBe(6);
   expect(table.tableauPiles[1].cards.length).toBe(6);
@@ -130,7 +130,7 @@ test('Table moveCardBetweenTableauPiles and complete a suit', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   table.tableauPiles[0].drawCards({size: table.tableauPiles[0].cards.length});
   table.tableauPiles[1].drawCards({size: table.tableauPiles[1].cards.length});
@@ -206,7 +206,7 @@ test('Table undo move card actions', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   expect(table.tableauPiles[0].cards.length).toBe(17);
   expect(table.tableauPiles[1].cards.length).toBe(16);
@@ -257,7 +257,7 @@ test('Table undo deck card dealing', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   expect(table.drawPiles[0].cards.length).toBe(2);
   expect(table.drawPiles[1].cards.length).toBe(2);
@@ -316,7 +316,7 @@ test('Table undo completion of cards', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   table.tableauPiles[0].drawCards({size: table.tableauPiles[0].cards.length});
   table.tableauPiles[1].drawCards({size: table.tableauPiles[1].cards.length});
@@ -372,7 +372,7 @@ test('Table complete a suit and win the game', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   expect(table.isClear).toBe(false);
 
@@ -424,7 +424,7 @@ test('Table hints', () => {
     }))
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   table.tableauPiles[0].drawCards({size: table.tableauPiles[0].cards.length});
   table.tableauPiles[1].drawCards({size: table.tableauPiles[1].cards.length});
@@ -513,7 +513,7 @@ test('Table hints', () => {
 });
 
 
-test('Table save steps and recover it', () => {
+test('Table takes steps and recovers them', () => {
 
   const cards = Array.from({length: 1 * 13 * 4}).map((_, index) => new Card({
     suit: Suit.Club,
@@ -527,7 +527,7 @@ test('Table save steps and recover it', () => {
     cards: [...cards]
   });
 
-  table.dealInitialCards();
+  table.setUpInitialCards();
 
   table.moveCardBetweenTableauPiles({
     fromId: table.tableauPiles[0].id,
@@ -574,12 +574,11 @@ test('Table save steps and recover it', () => {
   const table2 = new Table({
     numberOfTableauPiles: 4,
     numberOfDrawPiles: 2,
-    cards: [...cards]
+    cards: [...cards],
+    actionHistory: table.actionHistory
   });
 
-  table2.dealInitialCards();
-
-  table2.reproduce(table.actionHistory.actions);
+  table2.setUpInitialCards();
 
   expect(table2.tableauPiles[0].frontCard?.rank).toBe(10);
   expect(table2.tableauPiles[0].cards.length).toBe(11);

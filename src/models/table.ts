@@ -5,7 +5,6 @@ import {
   MOVE_CARD,
   MOVE_CARD_BETWEEN_TABLEAU_PILES,
   PAUSE,
-  Action,
   ActionHistory
 } from './action-history';
 import {Emitter} from '../event-emitter';
@@ -13,7 +12,8 @@ import {Emitter} from '../event-emitter';
 export type TableSettings = {
   numberOfTableauPiles: number,
   numberOfDrawPiles: number,
-  cards: Card[]
+  cards: Card[],
+  actionHistory?: ActionHistory
 }
 
 type TableEvents = {
@@ -21,8 +21,7 @@ type TableEvents = {
     from:Pile,
     to:Pile,
     size:number
-  },
-  ACTION_HAPPEN : undefined
+  }
 }
 
 export class Table
@@ -46,7 +45,7 @@ export class Table
     this._tableauPiles = Array.from({length:settings.numberOfTableauPiles}).map((_, i) => new Pile({id: `tabl${i}`, cards: []}));
     this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({id: `disc${i}`, cards: []}));
     this._piles = [this._deckPile, ...this._drawPiles, ...this.tableauPiles, ...this._discardPiles];
-    this._actionHistory = new ActionHistory();
+    this._actionHistory = settings.actionHistory || new ActionHistory();
   }
 
   get cards ()
@@ -194,11 +193,12 @@ export class Table
     }
   }
 
-  dealInitialCards ()
+  setUpInitialCards ()
   {
     this._dealCardsFromDeckToTableauPiles();
     this._dealCardsFromDeckToDrawPiles();
     this._flipUpTableauFrontCards();
+    this._reproduceHistory();
   }
 
   moveCardBetweenTableauPiles ({fromId, toId, size}:{fromId:string, toId:string, size:number})
@@ -424,19 +424,19 @@ export class Table
     return moves;
   }
 
-  reproduce (actions:Action[])
+  private _reproduceHistory ()
   {
-    for (let i = 0; i < actions.length; i++)
+    for (let i = 0; i < this.actionHistory.actions.length; i++)
     {
-      const action = actions[i];
+      const action = this.actionHistory.actions[i];
       switch (action.type)
       {
         case FACE_UP_CARD:
           this.getCardById(action.cardId).faceUp();
-          this._actionHistory.add({
-            cardId: action.cardId,
-            type: FACE_UP_CARD
-          });
+          // this._actionHistory.add({
+          //   cardId: action.cardId,
+          //   type: FACE_UP_CARD
+          // });
           break;
         case MOVE_CARD:
           this._moveCardBetweenPiles({
@@ -444,12 +444,12 @@ export class Table
             toId: action.toId,
             size: action.size
           });
-          this._actionHistory.add({
-            fromId: action.fromId,
-            toId: action.toId,
-            size: action.size,
-            type: MOVE_CARD
-          });
+          // this._actionHistory.add({
+          //   fromId: action.fromId,
+          //   toId: action.toId,
+          //   size: action.size,
+          //   type: MOVE_CARD
+          // });
           break;
         case MOVE_CARD_BETWEEN_TABLEAU_PILES:
           this._checkIfMovingCardTableauPilesIsValid({
@@ -462,15 +462,15 @@ export class Table
             toId: action.toId,
             size: action.size
           });
-          this._actionHistory.add({
-            fromId: action.fromId,
-            toId: action.toId,
-            size: action.size,
-            type: MOVE_CARD
-          });
+          // this._actionHistory.add({
+          //   fromId: action.fromId,
+          //   toId: action.toId,
+          //   size: action.size,
+          //   type: MOVE_CARD
+          // });
           break;
         case PAUSE:
-          this._actionHistory.add({type: PAUSE});
+          // this._actionHistory.add({type: PAUSE});
           break;
       }
     }
@@ -480,11 +480,6 @@ export class Table
     ({from, to, size}:{from:Pile, to:Pile, size:number}) => void)
   {
     this._emitter.on('MOVE_CARDS_BETWEEN_PILES', callback);
-  }
-
-  onActionHappen (callback: () => void)
-  {
-    this._emitter.on('ACTION_HAPPEN', callback);
   }
 
   toString()

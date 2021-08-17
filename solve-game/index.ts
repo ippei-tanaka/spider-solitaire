@@ -61,7 +61,7 @@ const table = new Table({
   ]
 });
     
-table.dealInitialCards();
+table.setUpInitialCards();
 
 console.log(table.toString());
 
