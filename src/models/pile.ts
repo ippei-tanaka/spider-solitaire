@@ -1,31 +1,24 @@
 import {Card} from './card';
-// import {nanoid} from 'nanoid';
+import {nanoid} from 'nanoid';
 
 type PileArgs = {
   cards?: Card[],
-  label?: string,
   id?:string
 }
 
 export class Pile
 {
   protected _cards:Card[];
-  protected _name:string;
-  // private _id:string;
+  protected _id:string;
 
   constructor (args:PileArgs = {})
   {
     this._cards = args.cards || [];
-    this._name = args.label || '';
-    // this._id = args.id || nanoid();
+    this._id = args.id || nanoid();
   }
 
-  // get id () {
-  //   return this._id;
-  // }
-
-  get name () {
-    return this._name;
+  get id () {
+    return this._id;
   }
 
   get cards ()

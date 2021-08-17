@@ -47,10 +47,10 @@ export class Table
   {
     this._settings = settings;
     this._cards = settings.cards;
-    this._deckPile = new Pile({label: 'deck', cards: settings.cards});
-    this._drawPiles = Array.from({length:settings.numberOfDrawPiles}).map((_, i) => new Pile({label: `draw${i}`, cards: []}));
-    this._tableauPiles = Array.from({length:settings.numberOfTableauPiles}).map((_, i) => new Pile({label: `tabl${i}`, cards: []}));
-    this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({label: `disc${i}`, cards: []}));
+    this._deckPile = new Pile({id: 'deck', cards: settings.cards});
+    this._drawPiles = Array.from({length:settings.numberOfDrawPiles}).map((_, i) => new Pile({id: `draw${i}`, cards: []}));
+    this._tableauPiles = Array.from({length:settings.numberOfTableauPiles}).map((_, i) => new Pile({id: `tabl${i}`, cards: []}));
+    this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({id: `disc${i}`, cards: []}));
     this._piles = [this._deckPile, ...this._drawPiles, ...this.tableauPiles, ...this._discardPiles];
     this._actionHistory = new UndoableActionHistory();
     this._simplifiedUndoableActions = [];
@@ -85,9 +85,9 @@ export class Table
     return pile;
   }
 
-  getPileByName (label:string)
+  getPileById (id:string)
   {
-    return this.getPileBy(p => p.name === label);
+    return this.getPileBy(p => p.id === id);
   }
 
   getPileByCardId (id:string)
@@ -147,19 +147,19 @@ export class Table
 
   private _moveCardBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
   {
-    if (!this._piles.find(p => p === from))
+    if (!this._piles.find(p => p.id === from.id))
     {
       throw new Error(`The "from" pile is not be in this table.`);
     }
 
-    if (!this._piles.find(p => p === to))
+    if (!this._piles.find(p => p.id === to.id))
     {
       throw new Error(`The "to" pile is not be in this table.`);
     }
 
     if (from.getFrontCards({size}).length !== size)
     {
-      throw new Error(`The pile "${from.name}" doesn't have ${size} cards to draw.`);
+      throw new Error(`The pile "${from.id}" doesn't have ${size} cards to draw.`);
     }
 
     const cards = from.drawCards({size});
@@ -263,12 +263,12 @@ export class Table
 
   private _checkIfMovingCardTableauPilesIsValid ({from, to, size}:{from:Pile, to:Pile, size:number})
   {
-    if (!this._tableauPiles.find(p => p === from))
+    if (!this._tableauPiles.find(p => p.id === from.id))
     {
       throw new Error(`The "from" pile is not a tableau pile.`);
     }
 
-    if (!this._tableauPiles.find(p => p === to))
+    if (!this._tableauPiles.find(p => p.id === to.id))
     {
       throw new Error(`The "to" pile is not a tableau pile.`);
     }
@@ -276,7 +276,7 @@ export class Table
     const cards = from.getFrontCards({size});
     if (cards.length !== size)
     {
-      throw new Error(`The pile "${from.name}" doesn't have ${size} cards to draw.`);
+      throw new Error(`The pile "${from.id}" doesn't have ${size} cards to draw.`);
     }
 
     if (to.frontCard && !Pile.checkIfCardsAreDescending({
@@ -492,6 +492,6 @@ export class Table
 
   toString()
   {
-    return this._piles.map(p => p.name + " " + p.toString()).join('\n');
+    return this._piles.map(p => p.id + " " + p.toString()).join('\n');
   }
 }

@@ -580,13 +580,7 @@ test('Table save steps and recover it', () => {
 
   table2.dealInitialCards();
 
-  const actions = table.simplifiedUndoableActions.map(a => recover({
-    simplifiedUndoableAction: a,
-    cardFinder: (id) => table2.getCardById(id),
-    pileFinder: (name) => table2.getPileByName(name)
-  }));
-
-  table2.reproduce(actions);
+  table2.reproduce(table.actionHistory.actions);
 
   expect(table2.tableauPiles[0].frontCard?.rank).toBe(10);
   expect(table2.tableauPiles[0].cards.length).toBe(11);

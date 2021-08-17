@@ -27,15 +27,15 @@ export const simplify = (action:UndoableAction):SimplifiedUndoableAction => {
     case MOVE_CARD:
       return {
         t: "M",
-        f: action.from.name,
-        o: action.to.name,
+        f: action.from.id,
+        o: action.to.id,
         s: action.size + '',
       };
     case MOVE_CARD_BETWEEN_TABLEAU_PILES:
       return {
         t: "T",
-        f: action.from.name,
-        o: action.to.name,
+        f: action.from.id,
+        o: action.to.id,
         s: action.size + '',
       };
     default:
