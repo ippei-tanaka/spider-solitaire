@@ -393,9 +393,9 @@ export default class MainScene extends Phaser.Scene
     }
   }
 
-  onMoveCardsBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number}) {
-    const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
-    const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
+  onMoveCardsBetweenPiles ({fromId, toId, size}:{fromId:string, toId:string, size:number}) {
+    const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromId);
+    const toPileGameObject = this._tableGameObject.getPileGameObjectByName(toId);
 
     this._cardAnimationQueue.add(async () => {
       const cardGameObjects = fromPileGameObject.drawFrontCardGameObjects({size});
@@ -433,12 +433,12 @@ export default class MainScene extends Phaser.Scene
       cardGameObjects.forEach(c => c.destroy());
     };
 
-    for (let {from, to, size} of moves)
+    for (let {fromId, toId, size} of moves)
     {
       this._hintAnimationQueue.add(async (onQueueCancel) =>
       {
-        const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(from.id);
-        const toPileGameObject = this._tableGameObject.getPileGameObjectByName(to.id);
+        const fromPileGameObject = this._tableGameObject.getPileGameObjectByName(fromId);
+        const toPileGameObject = this._tableGameObject.getPileGameObjectByName(toId);
         const frontCardGameObjects = fromPileGameObject.getFrontGameObjects({size});
 
         hintPileGameObject.x = fromPileGameObject.x;

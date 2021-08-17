@@ -475,40 +475,32 @@ test('Table hints', () => {
 
   expect(moves.length).toBe(7);
 
-  expect(moves[0].from).toBe(table.tableauPiles[0]);
-  expect(moves[0].to).toBe(table.tableauPiles[1]);
+  expect(moves[0].fromId).toBe(table.tableauPiles[0].id);
+  expect(moves[0].toId).toBe(table.tableauPiles[1].id);
   expect(moves[0].size).toBe(2);
 
-  expect(moves[1].from).toBe(table.tableauPiles[0]);
-  expect(moves[1].to).toBe(table.tableauPiles[3]);
+  expect(moves[1].fromId).toBe(table.tableauPiles[0].id);
+  expect(moves[1].toId).toBe(table.tableauPiles[3].id);
   expect(moves[1].size).toBe(2);
 
-  // expect(moves[2].from).toBe(table.tableauPiles[0]);
-  // expect(moves[2].to).toBe(table.tableauPiles[3]);
-  // expect(moves[2].size).toBe(1);
-
-  expect(moves[2].from).toBe(table.tableauPiles[0]);
-  expect(moves[2].to).toBe(table.tableauPiles[4]);
+  expect(moves[2].fromId).toBe(table.tableauPiles[0].id);
+  expect(moves[2].toId).toBe(table.tableauPiles[4].id);
   expect(moves[2].size).toBe(1);
 
-  expect(moves[3].from).toBe(table.tableauPiles[1]);
-  expect(moves[3].to).toBe(table.tableauPiles[2]);
+  expect(moves[3].fromId).toBe(table.tableauPiles[1].id);
+  expect(moves[3].toId).toBe(table.tableauPiles[2].id);
   expect(moves[3].size).toBe(1);
 
-  // expect(moves[5].from).toBe(table.tableauPiles[1]);
-  // expect(moves[5].to).toBe(table.tableauPiles[3]);
-  // expect(moves[5].size).toBe(1);
-
-  expect(moves[4].from).toBe(table.tableauPiles[2]);
-  expect(moves[4].to).toBe(table.tableauPiles[3]);
+  expect(moves[4].fromId).toBe(table.tableauPiles[2].id);
+  expect(moves[4].toId).toBe(table.tableauPiles[3].id);
   expect(moves[4].size).toBe(1);
 
-  expect(moves[5].from).toBe(table.tableauPiles[4]);
-  expect(moves[5].to).toBe(table.tableauPiles[1]);
+  expect(moves[5].fromId).toBe(table.tableauPiles[4].id);
+  expect(moves[5].toId).toBe(table.tableauPiles[1].id);
   expect(moves[5].size).toBe(1);
 
-  expect(moves[6].from).toBe(table.tableauPiles[4]);
-  expect(moves[6].to).toBe(table.tableauPiles[3]);
+  expect(moves[6].fromId).toBe(table.tableauPiles[4].id);
+  expect(moves[6].toId).toBe(table.tableauPiles[3].id);
   expect(moves[6].size).toBe(1);
 });
 

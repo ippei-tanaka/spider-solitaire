@@ -18,8 +18,8 @@ export type TableSettings = {
 
 type TableEvents = {
   MOVE_CARDS_BETWEEN_PILES: {
-    from:Pile,
-    to:Pile,
+    fromId:string,
+    toId:string,
     size:number
   }
 }
@@ -145,7 +145,7 @@ export class Table
     const cards = from.drawCards({size});
     to.placeCards({cards});
 
-    this._emitter.emit('MOVE_CARDS_BETWEEN_PILES', {from, to, size});
+    this._emitter.emit('MOVE_CARDS_BETWEEN_PILES', {fromId, toId, size});
   }
 
   private _dealCardsFromDeckToTableauPiles ()
@@ -389,7 +389,7 @@ export class Table
 
   getHints ()
   {
-    let moves:{size:number, from: Pile, to: Pile}[] = [];
+    let moves:{size:number, fromId:string, toId:string}[] = [];
 
     for (let from of this._tableauPiles)
     {
@@ -416,7 +416,7 @@ export class Table
               faceUp: true
             })) continue;
 
-          moves = [...moves, {from, to, size}];
+          moves = [...moves, {fromId:from.id, toId: to.id, size}];
         }
       }
     }
@@ -433,10 +433,6 @@ export class Table
       {
         case FACE_UP_CARD:
           this.getCardById(action.cardId).faceUp();
-          // this._actionHistory.add({
-          //   cardId: action.cardId,
-          //   type: FACE_UP_CARD
-          // });
           break;
         case MOVE_CARD:
           this._moveCardBetweenPiles({
@@ -444,12 +440,6 @@ export class Table
             toId: action.toId,
             size: action.size
           });
-          // this._actionHistory.add({
-          //   fromId: action.fromId,
-          //   toId: action.toId,
-          //   size: action.size,
-          //   type: MOVE_CARD
-          // });
           break;
         case MOVE_CARD_BETWEEN_TABLEAU_PILES:
           this._checkIfMovingCardTableauPilesIsValid({
@@ -462,22 +452,15 @@ export class Table
             toId: action.toId,
             size: action.size
           });
-          // this._actionHistory.add({
-          //   fromId: action.fromId,
-          //   toId: action.toId,
-          //   size: action.size,
-          //   type: MOVE_CARD
-          // });
           break;
         case PAUSE:
-          // this._actionHistory.add({type: PAUSE});
           break;
       }
     }
   }
 
   onMoveCardsBetweenPiles (callback:
-    ({from, to, size}:{from:Pile, to:Pile, size:number}) => void)
+   ({fromId, toId, size}:{fromId:string, toId:string, size:number}) => void)
   {
     this._emitter.on('MOVE_CARDS_BETWEEN_PILES', callback);
   }
