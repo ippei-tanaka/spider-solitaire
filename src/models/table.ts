@@ -5,9 +5,9 @@ import {
   MOVE_CARD,
   MOVE_CARD_BETWEEN_TABLEAU_PILES,
   PAUSE,
-  UndoableAction,
-  UndoableActionHistory
-} from './undoable-action-history';
+  Action,
+  ActionHistory
+} from './action-history';
 import {Emitter} from '../event-emitter';
 
 export type TableSettings = {
@@ -34,7 +34,7 @@ export class Table
   private _tableauPiles:Pile[];
   private _discardPiles:Pile[];
   private _piles:Pile[];
-  private _actionHistory:UndoableActionHistory;
+  private _actionHistory:ActionHistory;
   private _emitter: Emitter<TableEvents> = new Emitter<TableEvents>();
 
   constructor (settings: TableSettings)
@@ -46,7 +46,7 @@ export class Table
     this._tableauPiles = Array.from({length:settings.numberOfTableauPiles}).map((_, i) => new Pile({id: `tabl${i}`, cards: []}));
     this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({id: `disc${i}`, cards: []}));
     this._piles = [this._deckPile, ...this._drawPiles, ...this.tableauPiles, ...this._discardPiles];
-    this._actionHistory = new UndoableActionHistory();
+    this._actionHistory = new ActionHistory();
   }
 
   get cards ()
@@ -424,7 +424,7 @@ export class Table
     return moves;
   }
 
-  reproduce (actions:UndoableAction[])
+  reproduce (actions:Action[])
   {
     for (let i = 0; i < actions.length; i++)
     {

@@ -8,7 +8,7 @@ import {Table} from '../models/table';
 import {createCards} from '../models/create-cards';
 import {JobQueue} from '../job-queue';
 import {gameModes} from '../models/game-modes';
-import {UndoableActionHistory} from '../models/undoable-action-history';
+import {ActionHistory} from '../models/action-history';
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
@@ -59,9 +59,9 @@ export default class MainScene extends Phaser.Scene
       return;
     }
 
-    let history:UndoableActionHistory|null = null;
+    let history:ActionHistory|null = null;
     try {
-      history = UndoableActionHistory.deserialize(localStorage.getItem('actions') || '[]');
+      history = ActionHistory.deserialize(localStorage.getItem('actions') || '[]');
     } catch (e) {
       console.error(e);
     }
@@ -158,7 +158,7 @@ export default class MainScene extends Phaser.Scene
     }
 
     this._table.onActionHappen(() => {
-      localStorage.setItem('actions', UndoableActionHistory.serialize(this._table.actionHistory));
+      localStorage.setItem('actions', ActionHistory.serialize(this._table.actionHistory));
     });
 
     const undoButton = new Button({

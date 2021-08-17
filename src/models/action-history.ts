@@ -1,5 +1,3 @@
-// import {Emitter} from '../event-emitter';
-
 export const FACE_UP_CARD = 'FACE_UP_CARD';
 export const MOVE_CARD = 'MOVE_CARD';
 export const MOVE_CARD_BETWEEN_TABLEAU_PILES = 'MOVE_CARD_BETWEEN_TABLEAU_PILES';
@@ -28,45 +26,27 @@ interface PauseAction {
   type: typeof PAUSE
 }
 
-// type UndoableActionHistoryEvents = {
-//   ADD: UndoableAction,
-//   REMOVE: UndoableAction
-// };
+export type Action = FaceUpAction | MoveCardAction | PauseAction | MoveCardBetweenTableauPilesAction;
 
-export type UndoableAction = FaceUpAction | MoveCardAction | PauseAction | MoveCardBetweenTableauPilesAction;
-
-export class UndoableActionHistory
+export class ActionHistory
 {
-  private _actions:UndoableAction[];
-  // private _emitter:Emitter<UndoableActionHistoryEvents> = new Emitter<UndoableActionHistoryEvents>();
+  private _actions:Action[];
 
-  constructor (actions:UndoableAction[] = [])
+  constructor (actions:Action[] = [])
   {
     this._actions = actions;
   }
 
-  add (action:UndoableAction)
+  add (action:Action)
   {
     this._actions = [...this._actions, action];
-    // this._emitter.emit('ADD', action);
   }
 
   remove ()
   {
     const action = this._actions.slice(-1)[0];
     this._actions = this._actions.slice(0, -1);
-    // this._emitter.emit('REMOVE', action);
   }
-
-  // onAdd (callback: (action:UndoableAction) => void)
-  // {
-  //   this._emitter.on('ADD', callback);
-  // }
-
-  // onRemove (callback: (action:UndoableAction) => void)
-  // {
-  //   this._emitter.on('REMOVE', callback);
-  // }
 
   get latest ()
   {
@@ -78,7 +58,7 @@ export class UndoableActionHistory
     return [...this._actions];
   }
 
-  static serialize (history: UndoableActionHistory)
+  static serialize (history: ActionHistory)
   {
     return JSON.stringify(history.actions);
   }
@@ -92,7 +72,7 @@ export class UndoableActionHistory
       toId?: string,
       size?: string,
     }[];
-    const actions = objects.map<UndoableAction>(object => {
+    const actions = objects.map<Action>(object => {
       switch (object.type)
       {
         case "FACE_UP_CARD":
@@ -121,6 +101,6 @@ export class UndoableActionHistory
           }
       }
     });
-    return new UndoableActionHistory(actions);
+    return new ActionHistory(actions);
   }
 }
