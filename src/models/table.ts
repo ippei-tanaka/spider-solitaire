@@ -8,11 +8,6 @@ import {
   UndoableAction,
   UndoableActionHistory
 } from './undoable-action-history';
-import {
-  SimplifiedUndoableAction,
-  simplify,
-  recover
-} from './undoable-action-history/simplified-action'
 import {Emitter} from '../event-emitter';
 
 export type TableSettings = {
@@ -40,7 +35,6 @@ export class Table
   private _discardPiles:Pile[];
   private _piles:Pile[];
   private _actionHistory:UndoableActionHistory;
-  private _simplifiedUndoableActions:SimplifiedUndoableAction[];
   private _emitter: Emitter<TableEvents> = new Emitter<TableEvents>();
 
   constructor (settings: TableSettings)
@@ -53,16 +47,6 @@ export class Table
     this._discardPiles = Array.from({length:Math.floor(settings.cards.length / 13)}).map((_, i) => new Pile({id: `disc${i}`, cards: []}));
     this._piles = [this._deckPile, ...this._drawPiles, ...this.tableauPiles, ...this._discardPiles];
     this._actionHistory = new UndoableActionHistory();
-    this._simplifiedUndoableActions = [];
-
-    this._actionHistory.onAdd(action => {
-      this._simplifiedUndoableActions = [...this._simplifiedUndoableActions, simplify(action)];
-      this._emitter.emit('ACTION_HAPPEN', undefined);
-    });
-    this._actionHistory.onRemove(() => {
-      this._simplifiedUndoableActions = this._simplifiedUndoableActions.slice(0, -1);
-      this._emitter.emit('ACTION_HAPPEN', undefined);
-    });
   }
 
   get cards ()
@@ -138,11 +122,6 @@ export class Table
   get actionHistory ()
   {
     return this._actionHistory;
-  }
-
-  get simplifiedUndoableActions ()
-  {
-    return this._simplifiedUndoableActions;
   }
 
   private _moveCardBetweenPiles ({fromId, toId, size}:{fromId:string, toId:string, size:number})

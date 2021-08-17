@@ -8,10 +8,7 @@ import {Table} from '../models/table';
 import {createCards} from '../models/create-cards';
 import {JobQueue} from '../job-queue';
 import {gameModes} from '../models/game-modes';
-import {
-  SimplifiedUndoableAction,
-  recover
-} from '../models/undoable-action-history/simplified-action'
+import {UndoableActionHistory} from '../models/undoable-action-history';
 
 type Pointer = Phaser.Input.Pointer;
 type Zone = Phaser.GameObjects.Zone;
@@ -62,13 +59,11 @@ export default class MainScene extends Phaser.Scene
       return;
     }
 
-    let simplifiedUnsoableActions:SimplifiedUndoableAction[] = [];
+    let history:UndoableActionHistory|null = null;
     try {
-      simplifiedUnsoableActions = JSON.parse(localStorage.getItem('actions') || '[]') as SimplifiedUndoableAction[];
-    } catch (e)
-    {
+      history = UndoableActionHistory.deserialize(localStorage.getItem('actions') || '[]');
+    } catch (e) {
       console.error(e);
-      simplifiedUnsoableActions = [];
     }
 
     const seed = localStorage.getItem('seed');
@@ -140,11 +135,10 @@ export default class MainScene extends Phaser.Scene
       pileGameObject.adjustCardGameObjectPositions();
     });
 
-    if (seed && simplifiedUnsoableActions.length > 0) {
+    if (seed && history && history.actions.length > 0) {
       this._table.dealInitialCards();
       try {
-        const actions = simplifiedUnsoableActions.map(a => recover(a));
-        this._table.reproduce(actions);
+        this._table.reproduce(history.actions);
       } catch (e) {
         this.redirectToBoot();
         return;
@@ -164,7 +158,7 @@ export default class MainScene extends Phaser.Scene
     }
 
     this._table.onActionHappen(() => {
-      localStorage.setItem('actions', JSON.stringify(this._table.simplifiedUndoableActions));
+      localStorage.setItem('actions', UndoableActionHistory.serialize(this._table.actionHistory));
     });
 
     const undoButton = new Button({

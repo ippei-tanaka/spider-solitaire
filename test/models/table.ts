@@ -1,7 +1,6 @@
 import {Table} from '../../src/models/table';
 import {Card, Suit} from '../../src/models/card';
 import {createCards} from '../../src/models/create-cards';
-import {recover} from '../../src/models/undoable-action-history/simplified-action'
 
 test('Table settings', () => {
   const table = new Table({
