@@ -5,6 +5,7 @@ import {
   MOVE_CARD,
   MOVE_CARD_BETWEEN_TABLEAU_PILES,
   PAUSE,
+  UndoableAction,
   UndoableActionHistory
 } from './undoable-action-history';
 import {
@@ -426,16 +427,11 @@ export class Table
     return moves;
   }
 
-  reproduce (simplifiedUndoableActions:SimplifiedUndoableAction[])
+  reproduce (actions:UndoableAction[])
   {
-    for (let i = 0; i < simplifiedUndoableActions.length; i++)
+    for (let i = 0; i < actions.length; i++)
     {
-      const action = recover({
-        simplifiedUndoableAction: simplifiedUndoableActions[i],
-        cardFinder: (id) => this.getCardById(id),
-        pileFinder: (name) => this.getPileByName(name)
-      });
-
+      const action = actions[i];
       switch (action.type)
       {
         case FACE_UP_CARD:

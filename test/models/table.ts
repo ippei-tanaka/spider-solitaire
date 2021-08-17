@@ -1,7 +1,7 @@
 import {Table} from '../../src/models/table';
 import {Card, Suit} from '../../src/models/card';
 import {createCards} from '../../src/models/create-cards';
-
+import {recover} from '../../src/models/undoable-action-history/simplified-action'
 
 test('Table settings', () => {
   const table = new Table({
@@ -580,7 +580,13 @@ test('Table save steps and recover it', () => {
 
   table2.dealInitialCards();
 
-  table2.reproduce(table.simplifiedUndoableActions);
+  const actions = table.simplifiedUndoableActions.map(a => recover({
+    simplifiedUndoableAction: a,
+    cardFinder: (id) => table2.getCardById(id),
+    pileFinder: (name) => table2.getPileByName(name)
+  }));
+
+  table2.reproduce(actions);
 
   expect(table2.tableauPiles[0].frontCard?.rank).toBe(10);
   expect(table2.tableauPiles[0].cards.length).toBe(11);
