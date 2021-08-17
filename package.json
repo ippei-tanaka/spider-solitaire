@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "dev": "NODE_MODE=development webpack serve",
-    "production": "webpack"
+    "production": "webpack",
+    "solve-game": "npx ts-node --project ./tsconfig-for-solve-game.json ./solve-game/index.ts"
   },
   "author": "",
   "license": "ISC",
