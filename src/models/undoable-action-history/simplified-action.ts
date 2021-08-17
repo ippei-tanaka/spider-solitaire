@@ -5,8 +5,6 @@ import {
   PAUSE,
   UndoableAction
 } from './';
-import {Card} from '../card';
-import {Pile} from '../pile';
 
 export type SimplifiedUndoableAction = {
   t: string,
@@ -22,20 +20,20 @@ export const simplify = (action:UndoableAction):SimplifiedUndoableAction => {
     case FACE_UP_CARD:
       return {
         t: "F",
-        c: action.card.id
+        c: action.cardId
       };
     case MOVE_CARD:
       return {
         t: "M",
-        f: action.from.id,
-        o: action.to.id,
+        f: action.fromId,
+        o: action.toId,
         s: action.size + '',
       };
     case MOVE_CARD_BETWEEN_TABLEAU_PILES:
       return {
         t: "T",
-        f: action.from.id,
-        o: action.to.id,
+        f: action.fromId,
+        o: action.toId,
         s: action.size + '',
       };
     default:
@@ -45,34 +43,26 @@ export const simplify = (action:UndoableAction):SimplifiedUndoableAction => {
   }
 }
 
-export const recover = ({
-  simplifiedUndoableAction:action,
-  cardFinder,
-  pileFinder
-}:{
-  simplifiedUndoableAction:SimplifiedUndoableAction,
-  cardFinder: (name:string) => Card,
-  pileFinder: (name:string) => Pile,
-}):UndoableAction => {
+export const recover = (action:SimplifiedUndoableAction):UndoableAction => {
   switch (action.t)
   {
     case "F":
       return {
         type: FACE_UP_CARD,
-        card: cardFinder(action.c || '')
+        cardId: action.c || ''
       };
     case "M":
       return {
         type: MOVE_CARD,
-        from: pileFinder(action.f || ''),
-        to: pileFinder(action.o || ''),
+        fromId: action.f || '',
+        toId: action.o || '',
         size: parseInt(action.s || ''),
       };
     case "T":
       return {
         type: MOVE_CARD_BETWEEN_TABLEAU_PILES,
-        from: pileFinder(action.f || ''),
-        to: pileFinder(action.o || ''),
+        fromId: action.f || '',
+        toId: action.o || '',
         size: parseInt(action.s || ''),
       };
     case "P":

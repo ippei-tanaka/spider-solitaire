@@ -143,11 +143,7 @@ export default class MainScene extends Phaser.Scene
     if (seed && simplifiedUnsoableActions.length > 0) {
       this._table.dealInitialCards();
       try {
-        const actions = simplifiedUnsoableActions.map(a => recover({
-          simplifiedUndoableAction: a,
-          cardFinder: (id) => this._table.getCardById(id),
-          pileFinder: (name) => this._table.getPileById(name)
-        }));
+        const actions = simplifiedUnsoableActions.map(a => recover(a));
         this._table.reproduce(actions);
       } catch (e) {
         this.redirectToBoot();
@@ -375,8 +371,8 @@ export default class MainScene extends Phaser.Scene
         || Pile.checkIfCardsAreDescending({cards: [toPile.frontCard, ..._cards], faceUp: true}))
       {
         this._table.moveCardBetweenTableauPiles({
-          to: toPile,
-          from: fromPile,
+          toId: toPile.id,
+          fromId: fromPile.id,
           size
         });
         dragPileGameObject.setActive(false);

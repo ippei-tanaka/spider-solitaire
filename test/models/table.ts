@@ -109,8 +109,8 @@ test('Table moveCardBetweenTableauPiles', () => {
   expect(table.tableauPiles[1].cards.length).toBe(6);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[0],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[0].id,
     size: 1
   });
   expect(table.tableauPiles[0].cards.length).toBe(7);
@@ -167,8 +167,8 @@ test('Table moveCardBetweenTableauPiles and complete a suit', () => {
   expect(table.discardPiles[0].cards.length).toBe(0);
 
   expect(() => table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[0],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[0].id,
     size: 15
   })).toThrow();
 
@@ -177,8 +177,8 @@ test('Table moveCardBetweenTableauPiles and complete a suit', () => {
   expect(table.discardPiles[0].cards.length).toBe(0);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[0],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[0].id,
     size: 1
   });
 
@@ -214,8 +214,8 @@ test('Table undo move card actions', () => {
   expect(table.tableauPiles[2].cards.length).toBe(16);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[2],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[2].id,
     size: 1
   });
 
@@ -224,8 +224,8 @@ test('Table undo move card actions', () => {
   expect(table.tableauPiles[2].cards.length).toBe(17);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[2],
-    to: table.tableauPiles[0],
+    fromId: table.tableauPiles[2].id,
+    toId: table.tableauPiles[0].id,
     size: 2
   });
 
@@ -343,8 +343,8 @@ test('Table undo completion of cards', () => {
   expect(table.tableauPiles[0].frontCard?.rank).toBe(2);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[0],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[0].id,
     size: 1
   });
 
@@ -404,8 +404,8 @@ test('Table complete a suit and win the game', () => {
   expect(table.isClear).toBe(false);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[0],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[0].id,
     size: 1
   });
 
@@ -531,8 +531,8 @@ test('Table save steps and recover it', () => {
   table.dealInitialCards();
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[0],
-    to: table.tableauPiles[1],
+    fromId: table.tableauPiles[0].id,
+    toId: table.tableauPiles[1].id,
     size: 1
   });
 
@@ -548,16 +548,16 @@ test('Table save steps and recover it', () => {
   expect(table.drawPiles[1].cards.length).toBe(4);
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[1],
-    to: table.tableauPiles[2],
+    fromId: table.tableauPiles[1].id,
+    toId: table.tableauPiles[2].id,
     size: 2
   });
 
   table.dealCardsFromDrawPile();
 
   table.moveCardBetweenTableauPiles({
-    from: table.tableauPiles[2],
-    to: table.tableauPiles[3],
+    fromId: table.tableauPiles[2].id,
+    toId: table.tableauPiles[3].id,
     size: 1
   });
 

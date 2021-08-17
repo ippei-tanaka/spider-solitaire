@@ -145,14 +145,16 @@ export class Table
     return this._simplifiedUndoableActions;
   }
 
-  private _moveCardBetweenPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
+  private _moveCardBetweenPiles ({fromId, toId, size}:{fromId:string, toId:string, size:number})
   {
-    if (!this._piles.find(p => p.id === from.id))
+    const from = this._piles.find(p => p.id === fromId);
+    if (!from)
     {
       throw new Error(`The "from" pile is not be in this table.`);
     }
 
-    if (!this._piles.find(p => p.id === to.id))
+    const to = this._piles.find(p => p.id === toId);
+    if (!to)
     {
       throw new Error(`The "to" pile is not be in this table.`);
     }
@@ -176,9 +178,11 @@ export class Table
     let counter = 0;
     for (let index = 0; index < numberOfCards - numberOfDrawCards; index++)
     {
-      const from = this._deckPile;
-      const to = this._tableauPiles[counter % this.tableauPiles.length];
-      this._moveCardBetweenPiles({from, to, size: 1});
+      this._moveCardBetweenPiles({
+        fromId: this._deckPile.id, 
+        toId: this._tableauPiles[counter % this.tableauPiles.length].id, 
+        size: 1
+      });
       counter = counter + 1;
     }
   }
@@ -187,9 +191,11 @@ export class Table
   {
     for (let index = 0; index < this._settings.numberOfDrawPiles; index++)
     {
-      const from = this._deckPile;
-      const to = this._drawPiles[index];
-      this._moveCardBetweenPiles({from, to, size: this._settings.numberOfTableauPiles});
+      this._moveCardBetweenPiles({
+        fromId: this._deckPile.id, 
+        toId: this._drawPiles[index].id, 
+        size: this._settings.numberOfTableauPiles
+      });
     }
   }
 
@@ -216,20 +222,30 @@ export class Table
     this._flipUpTableauFrontCards();
   }
 
-  moveCardBetweenTableauPiles ({from, to, size}:{from:Pile, to:Pile, size:number})
+  moveCardBetweenTableauPiles ({fromId, toId, size}:{fromId:string, toId:string, size:number})
   {
-    this._checkIfMovingCardTableauPilesIsValid({from, to, size});
+    this._checkIfMovingCardTableauPilesIsValid({fromId, toId, size});
+    this._moveCardBetweenPiles({fromId, toId, size});
+    this._actionHistory.add({fromId, toId, size, type: MOVE_CARD_BETWEEN_TABLEAU_PILES});
 
-    this._moveCardBetweenPiles({from, to, size});
-    this._actionHistory.add({from, to, size, type: MOVE_CARD_BETWEEN_TABLEAU_PILES});
+    const from = this._tableauPiles.find(p => p.id === fromId);
+    if (!from)
+    {
+      throw new Error(`The "from" pile is not a tableau pile.`);
+    }
+
+    const to = this._tableauPiles.find(p => p.id === toId);
+    if (!to)
+    {
+      throw new Error(`The "to" pile is not a tableau pile.`);
+    }
 
     if (from.frontCard && !from.frontCard.isFaceUp) {
       this._faceUpCard({card: from.frontCard});
-      this._actionHistory.add({card: from.frontCard, type: FACE_UP_CARD});
+      this._actionHistory.add({cardId: from.frontCard.id, type: FACE_UP_CARD});
     }
 
     const discardedPile = this._discardPiles.find(p => p.cards.length === 0);
-
     if (!discardedPile)
     {
         throw new Error(`There aren't any empty discarded piles.`);
@@ -240,13 +256,13 @@ export class Table
       for (let i = 0; i < 13; i++)
       {
         this._moveCardBetweenPiles({
-          from: to,
-          to: discardedPile,
+          fromId: toId,
+          toId: discardedPile.id,
           size: 1
         });
         this._actionHistory.add({
-          from: to,
-          to: discardedPile,
+          fromId: toId,
+          toId: discardedPile.id,
           size: 1,
           type: MOVE_CARD
         });
@@ -254,21 +270,23 @@ export class Table
 
       if (to.frontCard && !to.frontCard.isFaceUp) {
         this._faceUpCard({card: to.frontCard});
-        this._actionHistory.add({card: to.frontCard, type: FACE_UP_CARD});
+        this._actionHistory.add({cardId: to.frontCard.id, type: FACE_UP_CARD});
       }
     }
 
     this._actionHistory.add({type: PAUSE});
   }
 
-  private _checkIfMovingCardTableauPilesIsValid ({from, to, size}:{from:Pile, to:Pile, size:number})
+  private _checkIfMovingCardTableauPilesIsValid ({fromId, toId, size}:{fromId:string, toId:string, size:number})
   {
-    if (!this._tableauPiles.find(p => p.id === from.id))
+    const from = this._tableauPiles.find(p => p.id === fromId);
+    if (!from)
     {
       throw new Error(`The "from" pile is not a tableau pile.`);
     }
 
-    if (!this._tableauPiles.find(p => p.id === to.id))
+    const to = this._tableauPiles.find(p => p.id === toId);
+    if (!to)
     {
       throw new Error(`The "to" pile is not a tableau pile.`);
     }
@@ -317,13 +335,13 @@ export class Table
     {
       const tableauPile = this._tableauPiles[index];
       this._moveCardBetweenPiles({
-        from: drawPile,
-        to: tableauPile,
+        fromId: drawPile.id,
+        toId: tableauPile.id,
         size: 1
       });
       this._actionHistory.add({
-        from: drawPile,
-        to: tableauPile,
+        fromId: drawPile.id,
+        toId: tableauPile.id,
         size: 1,
         type: MOVE_CARD
       });
@@ -334,7 +352,7 @@ export class Table
       if (tableauPile.frontCard && !tableauPile.frontCard.isFaceUp) {
         this._faceUpCard({card:tableauPile.frontCard});
         this._actionHistory.add({
-          card: tableauPile.frontCard,
+          cardId: tableauPile.frontCard.id,
           type: FACE_UP_CARD
         });
       }
@@ -370,14 +388,14 @@ export class Table
       switch (action.type)
       {
         case FACE_UP_CARD:
-          action.card.faceDown();
+          this.getCardById(action.cardId).faceDown();
           this._actionHistory.remove();
           break;
         case MOVE_CARD:
         case MOVE_CARD_BETWEEN_TABLEAU_PILES:
           this._moveCardBetweenPiles({
-            from: action.to,
-            to: action.from,
+            fromId: action.toId,
+            toId: action.fromId,
             size: action.size
           });
           this._actionHistory.remove();
@@ -435,39 +453,39 @@ export class Table
       switch (action.type)
       {
         case FACE_UP_CARD:
-          action.card.faceUp();
+          this.getCardById(action.cardId).faceUp();
           this._actionHistory.add({
-            card: action.card,
+            cardId: action.cardId,
             type: FACE_UP_CARD
           });
           break;
         case MOVE_CARD:
           this._moveCardBetweenPiles({
-            from: action.from,
-            to: action.to,
+            fromId: action.fromId,
+            toId: action.toId,
             size: action.size
           });
           this._actionHistory.add({
-            from: action.from,
-            to: action.to,
+            fromId: action.fromId,
+            toId: action.toId,
             size: action.size,
             type: MOVE_CARD
           });
           break;
         case MOVE_CARD_BETWEEN_TABLEAU_PILES:
           this._checkIfMovingCardTableauPilesIsValid({
-            from: action.from,
-            to: action.to,
+            fromId: action.fromId,
+            toId: action.toId,
             size: action.size
           });
           this._moveCardBetweenPiles({
-            from: action.from,
-            to: action.to,
+            fromId: action.fromId,
+            toId: action.toId,
             size: action.size
           });
           this._actionHistory.add({
-            from: action.from,
-            to: action.to,
+            fromId: action.fromId,
+            toId: action.toId,
             size: action.size,
             type: MOVE_CARD
           });

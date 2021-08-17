@@ -1,5 +1,3 @@
-import {Card} from '../card';
-import {Pile} from '../pile';
 import {Emitter} from '../../event-emitter';
 
 export const FACE_UP_CARD = 'FACE_UP_CARD';
@@ -9,20 +7,20 @@ export const PAUSE = 'PAUSE';
 
 interface FaceUpAction {
   type: typeof FACE_UP_CARD,
-  card: Card
+  cardId: string
 }
 
 interface MoveCardAction {
   type: typeof MOVE_CARD,
-  from:Pile,
-  to:Pile,
+  fromId:string,
+  toId:string,
   size:number
 }
 
 interface MoveCardBetweenTableauPilesAction {
   type: typeof MOVE_CARD_BETWEEN_TABLEAU_PILES,
-  from:Pile,
-  to:Pile,
+  fromId:string,
+  toId:string,
   size:number
 }
 
